@@ -2,6 +2,8 @@
 
 namespace GS\Service\Service;
 
+use function Symfony\Component\String\u;
+
 use Symfony\Component\OptionsResolver\{
 	Options,
 	OptionsResolver
@@ -18,13 +20,12 @@ use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use function Symfony\Component\String\u;
 
 /**
 	This class allows to get some value from package .yaml configuration
 */
 // as a service only for the sake of autowiring
-class GSConfService
+class ConfigService
 {
 	public function __construct(
 		private readonly string $projectDir,

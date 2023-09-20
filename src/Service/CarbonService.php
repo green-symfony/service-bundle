@@ -1,6 +1,6 @@
 <?php
 
-namespace GS\Service;
+namespace GS\Service\Service;
 
 use Carbon\{
     Carbon,
@@ -12,6 +12,12 @@ use Symfony\Component\OptionsResolver\{
     Options,
     OptionsResolver
 };
+use GS\Service\Contracts\{
+    GSIsoFormat
+};
+use GS\Service\IsoFormat\{
+    GSLLLIsoFormat
+};
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Yaml\Tag\TaggedValue;
 use Symfony\Component\Yaml\Yaml;
@@ -20,25 +26,9 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use App\Entity\{
-    AbstractUser,
-    OrderItem,
-    Order
-};
-use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use App\Repository\{
-    DiscountRepository,
-    OrderRepository
-};
-use GS\Service\{
-    ConfigsService,
-    FilesystemService,
-    DumpInfoService,
-    StringService,
-    ParametersService
-};
+use Symfony\Contracts\Service\Attribute\Required;
 
 class CarbonService
 {
@@ -48,10 +38,34 @@ class CarbonService
     }
 
     //###> API ###
+	
+    public static function isoFormat(
+        Carbon|CarbonImmutable $carbon,
+        ?GSIsoFormat $isoFormat = null,
+        bool $isTitle = true,
+    ): string {
+        $isoFormat  ??= new GSLLLIsoFormat();
+        $tz         = $carbon->tz;
+
+        return (string) u($carbon->isoFormat($isoFormat::get()) . ' [' . $tz . ']')->title($isTitle);
+    }
+
+    public static function forUser(
+        Carbon|CarbonImmutable $origin,
+        \DateTimeImmutable|\DateTime $sourceOfMeta = null,
+        ?string $tz = null,
+        ?string $locale = null,
+    ): Carbon|CarbonImmutable {
+        $carbonClone            = ($origin instanceof Carbon) ? $origin->clone() : $origin;
+        return $sourceOfMeta ?
+            $carbonClone->tz($sourceOfMeta->tz)->locale($sourceOfMeta->locale) :
+            $carbonClone->tz($tz ?? $carbonClone->tz)->locale($locale ?? $carbonClone->locale)
+        ;
+    }
 
     public function getCurrentYear(): string|int
     {
-        $carbon                 = $this->carbonFactory->make(
+        $carbon = $this->carbonFactory->make(
             Carbon::now('UTC'),
         );
         return $carbon->year;

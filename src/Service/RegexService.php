@@ -1,14 +1,13 @@
 <?php
 
-namespace GS\Service;
-
-use Symfony\Component\Finder\SplFileInfo;
+namespace GS\Service\Service;
 
 use function Symfony\Component\String\{
     u,
     b
 };
 
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\OptionsResolver\{
     Options,
@@ -22,19 +21,9 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use App\Entity\{
-    AbstractUser,
-    OrderItem,
-    Order
-};
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use GS\Service\{
-    CarbonService,
-    PartOfPathService,
-    ArrayService
-};
 
 class RegexService
 {

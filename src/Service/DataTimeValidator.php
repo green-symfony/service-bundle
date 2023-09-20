@@ -2,7 +2,7 @@
 
 namespace GS\Service\Service;
 
-class GSDataTimeValidator
+class DataTimeValidator
 {
     /**
         default php name of timezone

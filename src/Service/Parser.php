@@ -2,7 +2,7 @@
 
 namespace GS\Service\Service;
 
-class GSParser
+class Parser
 {
     public static function getFirstNameLastNamePatronymic(string $fullName): array
     {
@@ -16,9 +16,9 @@ class GSParser
 		$patronymic		= null;
 		
 		foreach([
-			[ &$firstName,		1 ],
-			[ &$lastName,		2 ],
-			[ &$patronymic,		3 ],
+			[ &$firstName, 1 ],
+			[ &$lastName, 2 ],
+			[ &$patronymic, 3 ],
 		] as [ &$propertyRef, $groupNumber ]) {
 			if (isset($matches[$groupNumber]) && $matches[$groupNumber] !== '') {
 				$propertyRef = $matches[$groupNumber];

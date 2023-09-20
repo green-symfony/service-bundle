@@ -1,14 +1,14 @@
 <?php
 
-namespace GS\Command;
+namespace GS\Service;
 
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\DependencyInjection\Definition;
-use GS\Service\Service\{
+use GS\Service\Service\Service\{
     GSServiceContainer,
     GSStringNormalizer
 };
-use GS\Command\Configuration;
+use GS\Service\Service\Configuration;
 use Symfony\Component\DependencyInjection\{
 	Parameter,
 	Reference
@@ -24,8 +24,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 
 class GSCommandExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
-    public const PREFIX = 'gs_command';
-    public const APP_ENV = 'env(APP_ENV)';
+    public const PREFIX = 'gs_service';
 	
 	public function getAlias(): string
     {
@@ -47,9 +46,7 @@ class GSCommandExtension extends ConfigurableExtension implements PrependExtensi
         array $config,
         ContainerBuilder $container,
     ) {
-        return new Configuration(
-            appEnv: $container->getParameter(self::APP_ENV),
-        );
+        return new Configuration();
     }
 
     /**
@@ -83,7 +80,6 @@ class GSCommandExtension extends ConfigurableExtension implements PrependExtensi
             $container->hasParameter('error_prod_logger_email'),
             PropertyAccess::createPropertyAccessor()->getValue($config, '[error_prod_logger_email][from]'),
         );
-        */
 		
 		$pa = PropertyAccess::createPropertyAccessor();
         GSServiceContainer::setParametersForce(
@@ -96,6 +92,7 @@ class GSCommandExtension extends ConfigurableExtension implements PrependExtensi
 				'['.self::APP_ENV.']',
             ],
         );
+        */
 		
 		/* to use in this object */
 		//$this->appEnv = new Parameter(self::APP_ENV);
@@ -111,7 +108,7 @@ class GSCommandExtension extends ConfigurableExtension implements PrependExtensi
     {
         /*
         $container
-            ->registerForAutoconfiguration(\GS\Command\<>Interface::class)
+            ->registerForAutoconfiguration(\GS\Service\<>Interface::class)
             ->addTag(GSTag::<>)
         ;
         */

@@ -1,13 +1,12 @@
 <?php
 
-namespace GS\Service;
+namespace GS\Service\Service;
 
 use Symfony\Component\Filesystem\{
     Path,
     Filesystem
 };
 use Symfony\Component\Finder\Finder;
-use App\Command\AbstractCommand;
 use Symfony\Component\OptionsResolver\{
     Options,
     OptionsResolver
@@ -22,8 +21,11 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use GS\Service\{
+use GS\Service\Service\{
     StringService
+};
+use GS\Command\Command\{
+	AbstractCommand
 };
 
 class DumpInfoService

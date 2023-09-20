@@ -2,7 +2,7 @@
 
 namespace GS\Service\Service;
 
-class GSRandomPassword
+class RandomPassword
 {
     public static function get(
 		int $len = 10,

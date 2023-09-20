@@ -2,16 +2,7 @@
 
 namespace GS\Service\Service;
 
-use Endroid\QrCode\{
-    Builder\Builder,
-    Encoding\Encoding,
-    ErrorCorrectionLevel\ErrorCorrectionLevelHigh,
-    RoundBlockSizeMode\RoundBlockSizeModeMargin,
-    Writer\PngWriter
-};
-use Symfony\Component\HttpFoundation\Response;
-
-final class GSBufferService
+final class BufferService
 {
     public function __construct()
     {

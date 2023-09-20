@@ -4,7 +4,7 @@ namespace GS\Service\Service;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class GSServiceContainer
+class ServiceContainer
 {
     public function __construct()
     {

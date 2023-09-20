@@ -4,16 +4,9 @@ namespace GS\Service\Service;
 
 use function Symfony\Component\String\u;
 
-use Endroid\QrCode\{
-    Builder\Builder,
-    Encoding\Encoding,
-    ErrorCorrectionLevel\ErrorCorrectionLevelHigh,
-    RoundBlockSizeMode\RoundBlockSizeModeMargin,
-    Writer\PngWriter
-};
 use Symfony\Component\HttpFoundation\Response;
 
-final class GSHtmlService
+final class HtmlService
 {
     public function __construct()
     {

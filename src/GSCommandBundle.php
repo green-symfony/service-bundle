@@ -1,9 +1,9 @@
 <?php
 
-namespace GS\Command;
+namespace GS\Service;
 
 use Symfony\Component\EventDispatcher\DependencyInjection\AddEventAliasesPass;
-use GS\Command\GSCommandExtension;
+use GS\Service\Service\GSCommandExtension;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

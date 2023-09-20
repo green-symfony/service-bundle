@@ -1,6 +1,6 @@
 <?php
 
-namespace GS\Service;
+namespace GS\Service\Service;
 
 use function Symfony\Component\String\u;
 
@@ -15,23 +15,12 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use App\Entity\{
-    AbstractUser,
-    OrderItem,
-    Order
-};
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use App\Repository\{
-    DiscountRepository,
-    OrderRepository
-};
-use GS\Service\{
+use GS\Service\Service\{
     StringService,
-    ConfigsService,
-    DumpInfoService,
-    ParametersService
+    DumpInfoService
 };
 
 class FilesystemService

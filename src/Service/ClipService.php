@@ -1,6 +1,6 @@
 <?php
 
-namespace GS\Service;
+namespace GS\Service\Service;
 
 use Symfony\Component\OptionsResolver\{
     Options,
@@ -18,15 +18,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use GS\Service\{
-    ConfigsService,
-    StringService,
-    FilesystemService
-};
 
 class ClipService
 {
-    public $contents;
+    public string $contents;
     private $os;
 
     public function __construct()
@@ -36,9 +31,11 @@ class ClipService
 
     //###> API ###
 
-    public function copy($contents): void
+    public function copy(int|float|string|null $contents): void
     {
-        $this->contents = \trim($contents);
+		if ($contents === null) return;
+		
+        $this->contents = \trim((string) $contents);
 
         if (\preg_match('~windows~i', $this->os)) {
             $this->windows();
