@@ -1,0 +1,20 @@
+parameters:
+
+services:
+    _defaults:
+        public:             false
+        autowire:           false
+        autoconfigure:      false
+        
+        bind:
+            ###> VALUES ###
+            ### TODO: from !php/const GS\Command\GSCommandExtension::PREFIX GS\Command\GSCommandExtension::APP_ENV
+            $env:               '%gs_command.env(APP_ENV)%'
+            ###< VALUES ###
+            
+            ###> SERVICES ###
+            $arrayService:      '@GS\Command\ArrayService'
+            $t:                 '@translator.default'
+            $devLogger:         '@monolog.logger.gs_command.dev_logger'
+            ###< SERVICES ###
+            

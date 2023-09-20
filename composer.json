@@ -1,0 +1,23 @@
+{
+    "name":			"green-symfony/service-bundle",
+    "autoload": {
+        "psr-4": {
+            "GS\\Service\\": "src/"
+        }
+    },
+	"version":		"0.0.0",
+    "type":			"symfony-bundle",
+    "description":	"AbstractCommand for extending into Symfony Application.",
+    "authors":		[
+        {
+            "name":			"Grigory Koblitsky",
+			"email":		"son5-29@mail.ru"
+        }
+    ],
+    "keywords":		["green-symfony", "service-bundle"],
+    "license":		"MIT",
+    "require":		{
+        "php": ">=7",
+        "symfony/property-access": "^6.3"
+    }
+}

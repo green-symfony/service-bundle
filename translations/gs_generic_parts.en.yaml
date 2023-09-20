@@ -1,0 +1,5 @@
+exception:
+    bad_locale_or_timezone:                 "Bad locale or timezone for DateTime"
+    post_doesnot_contain:                   "POST request doesn't contain parameters"
+    serializer_parse:                       "Serializer couldn't parse the content because it's incorrect or empty"
+    carbon_invalid_timezone:                "Incorrect timezone for Carbon\\Carbon"
