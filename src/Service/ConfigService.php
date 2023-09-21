@@ -2,63 +2,172 @@
 
 namespace GS\Service\Service;
 
-use function Symfony\Component\String\u;
+use function Symfony\Component\String\{
+    u,
+    b
+};
 
+use Symfony\Component\Finder\{
+	SplFileInfo,
+	Finder
+};
+use Symfony\Component\Filesystem\{
+    Path,
+    Filesystem
+};
 use Symfony\Component\OptionsResolver\{
-	Options,
-	OptionsResolver
+    Options,
+    OptionsResolver
+};
+use Symfony\Component\Yaml\{
+	Tag\TaggedValue,
+	Yaml
+};
+use Symfony\Component\HttpFoundation\{
+	Request,
+	RequestStack,
+	Session\Session
 };
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Yaml\Tag\TaggedValue;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Filesystem\Path;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Workflow\WorkflowInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use GS\Service\Service\{
+	BoolService,
+	StringService
+};
 
 /**
-	This class allows to get some value from package .yaml configuration
+	This class allows to get some value from package configuration
 */
 // as a service only for the sake of autowiring
-class ConfigService
+abstract class ConfigService
 {
+	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
+	public const PACK_NAME				= 'pack_name';
+	public const PACK_REL_PATH			= 'pack_rel_path';
+	public const DEFAULT_PACK_REL_PATH	= 'config/packages';
+	
+	/*
+		[
+			<PACK_NAME> => [<PACK_CONFIG>],
+			...
+		]
+	*/
+	private array $loadedPackageFilenameData = [];
+	
 	public function __construct(
+		private readonly BoolService $boolService,
+		private readonly StringService $stringService,
 		private readonly string $projectDir,
+		/*
+			[
+				[
+					ConfigService::PACK_NAME		=> <>,
+					ConfigService::PACK_REL_PATH	=> ?<>,
+				],
+			]
+		*/
+		private readonly array $packageFilenames,
 	) {
+		//TODO: remove
+		\dd(
+			'AUTOWIRING $packageFilenames',
+			$packageFilenames,
+		);
+		$this->initPackageFilenameDataByPackageFilenames();
 	}
+	
+	
+	//###> ABSTRACT ###
+	
+	abstract protected function configureConfigOptions(
+		string $uniqPackId,
+		OptionsResolver $resolver,
+		array $inputData,
+	): void;
+	
+	//###< ABSTRACT ###
+	
 	
 	// ###> API ###
 	
-	/**
-		$orderInitialMarking	= $this->confService->getPackage(
-			filename:					'workflow',
+	/** USAGE:
+	
+		$valueFromConfig = $this-> <thisServiceName> -> <thisMethodName> (
+			packName:					'workflow',
 			propertyAccessString:		'[framework][workflows][order][initial_marking]',
+			relPath:					'config/packages',
+			...
 		);
+		
+		1) SAVES RESULTS BY <packName><relPath> KEY
+			call this method once with unique $packName and $relPath
+			it'll save it
 	*/
-	public function getPackage(
-		string $filename,
-		string $propertyAccessString,
+	public function getPackageValue(
+		string $packName,
+		?string $propertyAccessString = null,
+		?string $relPath = null,
+		?string $ext = null,
 	): mixed {
-		$filename	= (string) u($filename)->ensureEnd('.yaml');
-		$config				= $this->getResultConfig(
-			$filename,
+		$fromLoaded = $this->getConfigFromLoadedPackageFilenameData(
+			$packName,
 		);
-
-		return (PropertyAccess::createPropertyAccessor())->getValue($config, $propertyAccessString);
+		//###> EXIT POINT
+		if (!\is_null($fromLoaded)) {
+			return
+				\is_null($propertyAccessString)
+					? $fromLoaded
+					: (PropertyAccess::createPropertyAccessor())->getValue(
+						$fromLoaded,
+						$propertyAccessString,
+					)
+				;
+		}
+		
+		//###> LOAD IT ONCE
+		$this->setPackageFilenameData(
+			$packName,
+			$relPath,
+			$ext,
+		);
+		return $this->getPackageValue(
+			$packName,
+			$propertyAccessString,
+		);
 	}
+	
 	// ###< API ###
+	
 	
 	// ###> HELPER ###
 	
-	private function getResultConfig(
-		string $filename,
-		string $relPath = 'config/packages',
+	private function getConfigFromLoadedPackageFilenameData(
+		string $packName,
+	): ?array {
+		$configFromLoadedConfig = null;
+		
+		if (empty($this->loadedPackageFilenameData)) return null;
+		
+		$config = $this->boolService->isGet($this->loadedPackageFilenameData, $packName);
+		if ($config != false) $configFromLoadedConfig = $config;
+		
+		return $configFromLoadedConfig;
+	}
+	
+	private function getCalculatedConfig(
+		string $packName,
+		?string $relPath = null,
+		?string $ext = null,
 	): array {
+		$relPath = $this->getDefaultPackRelPathIfNull($relPath);
+		//TODO: check correct mime...
+		$ext ??= $this->stringService->getExtFromPath($packName) ?? '.yaml';
+		
+		$filename = (string) u($packName)->ensureEnd($ext);
 		
 		// Abs path for locator
 		$absPath = Path::makeAbsolute(
@@ -84,14 +193,66 @@ class ConfigService
 				$fileLocator->locate($filename, first: false),
 			)
 		);
-		$this->configureConfigOptions($resolver, $config);
+		
+		$uniqPackId = $this->getUniqPackId($packName, $relPath);
+		$this->configureConfigOptions(
+			$uniqPackId,
+			$resolver,
+			$config,
+		);
 		return $resolver->resolve($config);
 	}
 	
-	private function configureConfigOptions(OptionsResolver $resolver, array $inputData)
-	{
-		$resolver
-			->setDefaults($inputData)
-		;
+	private function initPackageFilenameDataByPackageFilenames(): void {
+		//###> init only
+		if (!empty($this->packageFilenameData)) return;
+		
+		//###> without it, it's useless
+		if (empty($this->packageFilenames)) return;
+		
+		foreach($this->packageFilenames as [
+			self::PACK_NAME		=> $packName,
+			self::PACK_REL_PATH	=> $packRelPath,
+		]) {
+			$this->setPackageFilenameData(
+				$packName,
+				$packRelPath,
+			);
+		}
 	}
+	
+	private function setPackageFilenameData(
+		string $packName,
+		?string $packRelPath = null,
+		?string $ext = null,
+	): self {
+		$packRelPath = $this->getDefaultPackRelPathIfNull($packRelPath);
+		
+		$this->loadedPackageFilenameData[$this->getUniqPackId($packName, $packRelPath)] 
+			= $this->getCalculatedConfig(
+				$packName,
+				$packRelPath,
+				$ext,
+			)
+		;
+		return $this;
+	}
+	
+	private function getUniqPackId(
+		string $packName,
+		?string $packRelPath = null,
+	): string {
+		$packRelPath = $this->getDefaultPackRelPathIfNull($packRelPath);
+		return $this->stringService->getPath($packRelPath, $packName);
+	}
+	
+	private function getDefaultPackRelPathIfNull(
+		?string $packRelPath = null,
+	): string {
+		if (\is_null($packRelPath)) return self::DEFAULT_PACK_REL_PATH;
+		
+		return $packRelPath;
+	}
+	
+	// ###< HELPER ###
 }

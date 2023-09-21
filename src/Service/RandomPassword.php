@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class RandomPassword
 {
+    //###> API ###
+	
     public static function get(
 		int $len = 10,
 	): string {
@@ -16,4 +18,6 @@ class RandomPassword
 		}
 		return \implode($pass);
     }
+	
+    //###< API ###
 }

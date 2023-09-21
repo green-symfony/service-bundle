@@ -3,7 +3,7 @@
 namespace GS\Service;
 
 use Symfony\Component\EventDispatcher\DependencyInjection\AddEventAliasesPass;
-use GS\Service\Service\GSCommandExtension;
+use GS\Service\GSServiceExtension;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveEnvPlaceholdersPass;
 
-class GSCommandBundle extends Bundle
+class GSServiceBundle extends Bundle
 {
     public function getPath(): string
     {
@@ -26,7 +26,7 @@ class GSCommandBundle extends Bundle
     public function getContainerExtension(): ?ExtensionInterface
     {
         if ($this->extension === null) {
-            $this->extension = new GSCommandExtension();
+            $this->extension = new GSServiceExtension();
         }
 
         return $this->extension;

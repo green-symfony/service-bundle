@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class StringNormalizer
 {
+	//###> API ###
+	
     public static function getFullLocale(
 		string $locale,
 	): string {
@@ -12,4 +14,6 @@ class StringNormalizer
         }
         return $fullLocale;
     }
+	
+	//###< API ###
 }

@@ -2,6 +2,11 @@
 
 namespace GS\Service\Service;
 
+use function Symfony\Component\String\{
+    u,
+    b
+};
+
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ServiceContainer
@@ -9,6 +14,8 @@ class ServiceContainer
     public function __construct()
     {
     }
+	
+    //###> API ###
 
     public static function setParametersNoForce(
         ContainerBuilder $containerBuilder,
@@ -16,11 +23,14 @@ class ServiceContainer
         array $keys,
         ?string $parameterPrefix = null,
     ): void {
-        $parameterPrefix        ??= '';
+        $parameterPrefix ??= '';
 
         foreach ($keys as $key) {
             if (!$containerBuilder->hasParameter($key)) {
-                $containerBuilder->setParameter($parameterPrefix . $key, $callbackGetValue($key));
+                $containerBuilder->setParameter(
+					self::getParameterName($parameterPrefix, $key),
+					$callbackGetValue($key),
+				);
             }
         }
     }
@@ -67,22 +77,26 @@ class ServiceContainer
         }
     }
 	
+    //###< API ###
+	
 	// ###> HELPER ###
 	
 	private static function getNormalizedPrefix(int|float|string|null $prefix): string {
 		
-		$prefix        ??= '';
-		if ($prefix != '') $prefix = $prefix . '.';
+		$prefix ??= '';
+		if ($prefix != '') $prefix = (string) u($prefix)->ensureEnd('.');
 		
 		return $prefix;
 	}
 	
 	private static function getNormalizedKey(int|float|string $key): string {
-		asdffsd[asdf
+		
 		$key		= \strtr((string) $key, [
-			']['		=> '.',
+			'][' => '.',
 		]);
 		
 		return \trim($key, '[]');
 	}
+
+	// ###< HELPER ###
 }

@@ -7,6 +7,8 @@ final class BufferService
     public function __construct()
     {
     }
+	
+    //###> API ###
 
     /**
         Works with php output buffer
@@ -17,4 +19,6 @@ final class BufferService
             \ob_end_clean();
         }
     }
+
+    //###< API ###
 }

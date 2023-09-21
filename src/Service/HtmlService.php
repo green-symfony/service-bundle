@@ -11,6 +11,8 @@ final class HtmlService
     public function __construct()
     {
     }
+	
+    //###> API ###
 
     public static function getImgHtmlByBinary(
         string $content,
@@ -19,4 +21,6 @@ final class HtmlService
 			class="img-fluid"
 			src="data:png;base64,' . \base64_encode($content) . '" alt="img">')->collapseWhitespace();
     }
+	
+    //###< API ###
 }

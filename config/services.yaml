@@ -8,6 +8,9 @@ services:
         
         bind:
             ###> VALUES ###
+            # TODO: hard
+            $projectDir:                '../../../../%kernel.project_dir%'
+            $packageFilenames:          '%gs_service.load_packs_configs%'
             ###< VALUES ###
             
             ###> SERVICES ###

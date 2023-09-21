@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class DataTimeValidator
 {
+    //###> API ###
+	
     /**
         default php name of timezone
     */
@@ -38,4 +40,6 @@ class DataTimeValidator
             || \preg_match('~^(?![^+\-0-9])[+\-][0-2][0-4][:]?[0-5][0-9]\b~', $tz)
         ;
     }
+
+    //###< API ###
 }

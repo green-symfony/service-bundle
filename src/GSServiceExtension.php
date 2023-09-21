@@ -4,11 +4,7 @@ namespace GS\Service;
 
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\DependencyInjection\Definition;
-use GS\Service\Service\Service\{
-    GSServiceContainer,
-    GSStringNormalizer
-};
-use GS\Service\Service\Configuration;
+use GS\Service\Configuration;
 use Symfony\Component\DependencyInjection\{
 	Parameter,
 	Reference
@@ -21,11 +17,20 @@ use Symfony\Component\DependencyInjection\Loader\{
 };
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
+use GS\Service\Service\{
+    ServiceContainer,
+    BoolService,
+    StringNormalizer,
+    ConfigService
+};
 
-class GSCommandExtension extends ConfigurableExtension implements PrependExtensionInterface
+class GSServiceExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
     public const PREFIX = 'gs_service';
 	
+	public function __construct(
+		private readonly BoolService $boolService,
+	)
 	public function getAlias(): string
     {
 		return self::PREFIX;
@@ -80,19 +85,50 @@ class GSCommandExtension extends ConfigurableExtension implements PrependExtensi
             $container->hasParameter('error_prod_logger_email'),
             PropertyAccess::createPropertyAccessor()->getValue($config, '[error_prod_logger_email][from]'),
         );
+        */
 		
 		$pa = PropertyAccess::createPropertyAccessor();
-        GSServiceContainer::setParametersForce(
+        ServiceContainer::setParametersForce(
             $container,
             callbackGetValue: static function ($key) use (&$config, $pa) {
-                return $pa->getValue($config, $key);
+				$configsServiceResult = [];
+				$configsService = $pa->getValue($config, $key);
+				foreach($configsService as $configService) {
+					foreach($configService as $configServiceEl) {
+						$packName = $this->boolService->isGet(
+							$configServiceEl,
+							ConfigService::PACK_NAME,
+						);
+						$packRelPath = $this->boolService->isGet(
+							$configServiceEl,
+							ConfigService::PACK_REL_PATH,
+						);
+						
+						//TODO: 0
+						\dd(
+							'$packName',
+							$packName,
+							'$packRelPath',
+							$packRelPath,
+						);
+						if ($packName == false) continue;
+						if ($packRelPath == false) {
+							$packRelPath = null;
+						}
+						
+						$configsServiceResult []= [
+							ConfigService::PACK_NAME =>		$packName,
+							ConfigService::PACK_REL_PATH =>	$packRelPath,
+						];
+					}
+				}
+                return $configsServiceResult;
             },
             parameterPrefix: self::PREFIX,
             keys: [
-				'['.self::APP_ENV.']',
+				'['.ConfigService::CONFIG_SERVICE_KEY.']',
             ],
         );
-        */
 		
 		/* to use in this object */
 		//$this->appEnv = new Parameter(self::APP_ENV);

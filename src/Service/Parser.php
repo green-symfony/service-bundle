@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class Parser
 {
+    //###> API ###
+	
     public static function getFirstNameLastNamePatronymic(string $fullName): array
     {
 		$matches = [];
@@ -27,4 +29,6 @@ class Parser
 		
 		return [$firstName, $lastName, $patronymic];
     }
+	
+    //###< API ###
 }

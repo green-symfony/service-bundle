@@ -1,0 +1,3 @@
+load_packs_configs:
+    -   pack_name:      ''
+        pack_rel_path:  ~

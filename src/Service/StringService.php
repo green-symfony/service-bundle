@@ -7,23 +7,30 @@ use function Symfony\Component\String\{
     b
 };
 
-use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\Finder\{
+	SplFileInfo,
+	Finder
+};
 use Symfony\Component\Filesystem\{
     Path,
     Filesystem
 };
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\OptionsResolver\{
     Options,
     OptionsResolver
 };
+use Symfony\Component\Yaml\{
+	Tag\TaggedValue,
+	Yaml
+};
+use Symfony\Component\HttpFoundation\{
+	Request,
+	RequestStack,
+	File,
+	Session\Session
+};
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Yaml\Tag\TaggedValue;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Workflow\WorkflowInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -35,6 +42,9 @@ use GS\Service\Service\{
 class StringService
 {
     public const DOP_WIDTH_FOR_STR_PAD = 10;
+
+    public const EMOJI_START_RANGE      = 0x1F400;
+    public const EMOJI_END_RANGE        = 0x1F440;
 
     public function __construct(
         private readonly ArrayService $arrayService,
@@ -348,6 +358,66 @@ class StringService
         }
         return Path::normalize(Path::getRoot($path));
     }
+	
+	public function getEmoji(): string {
+		[$max, $min] = [
+			self::EMOJI_START_RANGE,
+			self::EMOJI_END_RANGE,
+		];
+		if ($min > $max) [$max, $min] = [$min, $max];
+		return \IntlChar::chr(\random_int($min, $max));
+	}
+	
+	/*
+		TODO: 0
+		Check working of this method
+	*/
+	public function getExtFromPath(
+		string $path,
+		bool $preferSubstr = true,
+		bool $withDotAtTheBeginning = true,
+		bool $checkPath = false,
+	): ?string {
+		//###> $mimeExt
+		try {
+			$file = new File(
+				$path,
+				$checkPath,
+			);
+			$mimeExt = $file->guessExtension();
+			
+			//TODO: remove
+			\dd(
+				'$mimeExt',
+				$mimeExt,
+			);
+		} catch(\Exception $e) {
+			$mimeExt = null;
+		}
+		//###< $mimeExt
+		
+		//###> $substrExt
+		$substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
+		if (!\str_starts_with($substrExt, '.')) $substrExt = null;
+		//###< $substrExt
+		
+		//###> PREFERENCES
+		$ext = null;
+		if ($mimeExt != null) $ext = $mimeExt;
+		if ($preferSubstr && $substrExt != null) $ext = $substrExt;
+		//###< PREFERENCES
+		
+		
+		//###> DOT
+		if ($withDotAtTheBeginning) {
+			if (!\is_null($ext)) $ext = (string) u($ext)->ensureStart('.');
+		} else {
+			$ext = \ltrim($ext, '.');
+		}
+		//###< DOT
+		
+		return $ext;
+	}
 
     //###< API ###
 
