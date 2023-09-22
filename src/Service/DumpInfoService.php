@@ -15,7 +15,7 @@ use GS\Command\Command\{
 class DumpInfoService
 {
     public function __construct(
-        private readonly StringService $stringService,
+        protected readonly StringService $stringService,
     ) {
     }
 
@@ -32,6 +32,7 @@ class DumpInfoService
         ]);
     }
 
+	/* Dumps paths */
     public function dumpInfo(
         AbstractCommand $command,
         string|array $from,
@@ -163,11 +164,10 @@ class DumpInfoService
         */
     }
 
-    /*
+    /* USAGE:
         $this->io->table(
             [
                 '...',
-                ...
             ],
             [
                 [
@@ -225,12 +225,15 @@ class DumpInfoService
         Finder $finder,
     ): void {
         foreach ($finder as $file) {
-            $command->getIo()->info($file->getRealPath());
+            $command->getIo()->info(
+				$file->getRealPath(),
+			);
         }
         \dd('END');
     }
 
     //###< API ###
+
 
     //###> HELPER ###
 

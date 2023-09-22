@@ -28,9 +28,20 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 {
     public const PREFIX = 'gs_service';
 	
+    public const LOCALE = 'locale';
+	protected $localeParameter;
+    public const TIMEZONE = 'timezone';
+	protected $timezoneParameter;
+	
+    public const APP_ENV = 'app_env';
+    public const LOCAL_DRIVE_FOR_TEST = 'local_drive_for_test';
+    public const FAKER_SERVICE_KEY = 'faker';
+    public const CARBON_FACTORY_SERVICE_KEY = 'carbon_factory';
+	
 	public function __construct(
-		private readonly BoolService $boolService,
-	)
+		//private readonly BoolService $boolService,
+	) {}
+	
 	public function getAlias(): string
     {
 		return self::PREFIX;
@@ -51,7 +62,14 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         array $config,
         ContainerBuilder $container,
     ) {
-        return new Configuration();
+		return new Configuration(
+            locale:		$container->getParameter(
+				ServiceContainer::getParameterName(self::PREFIX, self::LOCALE),
+			),
+            timezone:	$container->getParameter(
+				ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
+			),
+        );
     }
 
     /**
@@ -64,19 +82,60 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         $this->loadYaml($container, [
             ['config', 'services.yaml'],
         ]);
-        $this->fillInParameters($config, $container);
-        $this->fillInServiceArgumentsWithConfigOfCurrentBundle($config, $container);
-        $this->registerBundleTagsForAutoconfiguration($container);
-        /*
-        \dd(
-            $container->getParameter('gs_generic_parts.timezone'),
-        );
-        */
+        $this->setParametersFromBundleConfiguration(
+			$config,
+			$container,
+		);
+        $this->createServicesWithConfigArgumentsOfTheCurrentBundle(
+			$config,
+			$container,
+		);
+        $this->registerBundleTagsForAutoconfiguration(
+			$container,
+		);
     }
 
     //###> HELPERS ###
 
-    private function fillInParameters(
+    private function carbonService(
+		array $config,
+		ContainerBuilder $container,
+	): void {
+        $carbon = new Definition(
+            class:          \Carbon\FactoryImmutable::class,
+            arguments:      [
+                '$settings'         => [
+                    'locale'                    => $this->localeParameter,
+                    'strictMode'                => true,
+                    'timezone'                  => $this->timezoneParameter,
+                    'toStringFormat'            => 'd.m.Y H:i:s P',
+                    'monthOverflow'             => true,
+                    'yearOverflow'              => true,
+                ],
+            ],
+        );
+        $container->setDefinition(
+            id: ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
+            definition: $carbon,
+        );
+    }
+
+    private function fakerService(
+		array $config,
+		ContainerBuilder $container,
+	): void {
+        $faker = (new Definition(\Faker\Factory::class, []))
+            ->setFactory([\Faker\Factory::class, 'create'])
+            ->setArgument(0, $this->localeParameter)
+        ;
+        //\dd($config['locale']);
+        $faker = $container->setDefinition(
+            id: ServiceContainer::getParameterName(self::PREFIX, self::FAKER_SERVICE_KEY),
+            definition: $faker,
+        );
+    }
+
+    private function setParametersFromBundleConfiguration(
         array $config,
         ContainerBuilder $container,
     ) {
@@ -88,13 +147,29 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         */
 		
 		$pa = PropertyAccess::createPropertyAccessor();
+		
+        ServiceContainer::setParametersForce(
+            $container,
+            callbackGetValue: static function ($key) use (&$config, $pa) {
+                return $pa->getValue($config, '['.$key.']');
+            },
+            parameterPrefix: self::PREFIX,
+            keys: [
+				self::APP_ENV,
+				self::LOCAL_DRIVE_FOR_TEST,
+                self::LOCALE,
+                self::TIMEZONE,
+            ],
+        );
+		
         ServiceContainer::setParametersForce(
             $container,
             callbackGetValue: static function ($key) use (&$config, $pa) {
 				$configsServiceResult = [];
-				$configsService = $pa->getValue($config, $key);
+				$configsService = $pa->getValue($config, '['.$key.']');
 				foreach($configsService as $configService) {
 					foreach($configService as $configServiceEl) {
+						/*
 						$packName = $this->boolService->isGet(
 							$configServiceEl,
 							ConfigService::PACK_NAME,
@@ -103,6 +178,15 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 							$configServiceEl,
 							ConfigService::PACK_REL_PATH,
 						);
+						*/
+						$packName = null;
+						if (isset($configServiceEl[ConfigService::PACK_NAME])) {
+							$packName = $configServiceEl[ConfigService::PACK_NAME];
+						}
+						$packRelPath = null;
+						if (isset($configServiceEl[ConfigService::PACK_REL_PATH])) {
+							$packRelPath = $configServiceEl[ConfigService::PACK_REL_PATH];
+						}
 						
 						//TODO: 0
 						\dd(
@@ -126,18 +210,33 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             },
             parameterPrefix: self::PREFIX,
             keys: [
-				'['.ConfigService::CONFIG_SERVICE_KEY.']',
+				ConfigService::CONFIG_SERVICE_KEY,
             ],
         );
 		
 		/* to use in this object */
-		//$this->appEnv = new Parameter(self::APP_ENV);
+		$this->localeParameter		= new Parameter(ServiceContainer::getParameterName(
+			self::PREFIX,
+			self::LOCALE,
+		));
+		$this->timezoneParameter	= new Parameter(ServiceContainer::getParameterName(
+			self::PREFIX,
+			self::TIMEZONE,
+		));
     }
 
-    private function fillInServiceArgumentsWithConfigOfCurrentBundle(
+    private function createServicesWithConfigArgumentsOfTheCurrentBundle(
         array $config,
         ContainerBuilder $container,
     ) {
+        $this->carbonService(
+			$config,
+			$container,
+		);
+        $this->fakerService(
+			$config,
+			$container,
+		);
     }
 
     private function registerBundleTagsForAutoconfiguration(ContainerBuilder $container)

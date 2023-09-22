@@ -47,20 +47,20 @@ class StringService
     public const EMOJI_END_RANGE        = 0x1F440;
 
     public function __construct(
-        private readonly ArrayService $arrayService,
-        private readonly CarbonService $carbonService,
-        private readonly BoolService $boolService,
-        private readonly array $appPassportBodies,
-        private readonly array $configMonths,
-        private readonly string $yearRegex,
-        private readonly string $yearRegexFull,
-        private readonly string $ppiConfigBurFilePrefixRegex,
-        private readonly string $ppiConfigBurFileCountFiguresRegex,
-        private readonly string $ppiConfigBurExtRegex,
-        private readonly string $ppiConfigBurCorrectFilePrefix,
-        private readonly string $ppiConfigBurCorrectExt,
-        private readonly string $ipV4Regex,
-        private readonly string $slashOfIpRegex,
+        protected readonly ArrayService $arrayService,
+        protected readonly CarbonService $carbonService,
+        protected readonly BoolService $boolService,
+        protected readonly array $appPassportBodies,
+        protected readonly array $configMonths,
+        protected readonly string $yearRegex,
+        protected readonly string $yearRegexFull,
+        protected readonly string $ppiConfigBurFilePrefixRegex,
+        protected readonly string $ppiConfigBurFileCountFiguresRegex,
+        protected readonly string $ppiConfigBurExtRegex,
+        protected readonly string $ppiConfigBurCorrectFilePrefix,
+        protected readonly string $ppiConfigBurCorrectExt,
+        protected readonly string $ipV4Regex,
+        protected readonly string $slashOfIpRegex,
     ) {
     }
 

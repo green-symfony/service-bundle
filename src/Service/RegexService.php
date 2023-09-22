@@ -32,9 +32,9 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class RegexService
 {
     public function __construct(
-        private readonly string $systemFilePattern,
-        private readonly string $flightReportFileRegex,
-        private readonly string $sdkExtRegex,
+        protected readonly string $systemFilePattern,
+        protected readonly string $flightReportFileRegex,
+        protected readonly string $sdkExtRegex,
     ) {
     }
 

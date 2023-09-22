@@ -1,4 +1,8 @@
 parameters:
+    ###> BY DEFAULT ###
+    gs_service.locale:      'en_US'
+    gs_service.timezone:    '+12:00'
+    ###< BY DEFAULT ###
 
 services:
     _defaults:
@@ -8,11 +12,88 @@ services:
         
         bind:
             ###> VALUES ###
-            # TODO: hard
+            # TODO: it's hard, redo it with !php/const and concat
+            $appEnv:                    '%gs_service.app_env%'
+            $localDriveForTest:         '%gs_service.local_drive_for_test%'
             $projectDir:                '../../../../%kernel.project_dir%'
             $packageFilenames:          '%gs_service.load_packs_configs%'
             ###< VALUES ###
             
             ###> SERVICES ###
-            ###< SERVICES ###
             
+            ###> SYMFONY SERVICES ###
+            $slugger:                   '@slugger'
+            ###< SYMFONY SERVICES ###
+            
+            ###> BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
+            $faker:                     '@gs_service.faker'
+            $carbonFactory:             '@gs_service.carbon_factory'
+            ###< BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
+            
+            ###< SERVICES ###
+    
+    ###> SERVICES ###
+    GS\Service\Service\ArrayService:
+        class:      'GS\Service\Service\ArrayService'
+        autowire:   true
+        
+    GS\Service\Service\BoolService:
+        class:      'GS\Service\Service\BoolService'
+        autowire:   true
+        
+    GS\Service\Service\BufferService:
+        class:      'GS\Service\Service\BufferService'
+        autowire:   true
+        
+    GS\Service\Service\CarbonService:
+        class:      'GS\Service\Service\CarbonService'
+        autowire:   true
+        
+    GS\Service\Service\ClipService:
+        class:      'GS\Service\Service\ClipService'
+        autowire:   true
+        
+    GS\Service\Service\ConfigService:
+        class:      'GS\Service\Service\ConfigService'
+        autowire:   true
+        
+    GS\Service\Service\DataTimeValidator:
+        class:      'GS\Service\Service\DataTimeValidator'
+        autowire:   true
+        
+    GS\Service\Service\DumpInfoService:
+        class:      'GS\Service\Service\DumpInfoService'
+        autowire:   true
+        
+    GS\Service\Service\FilesystemService:
+        class:      'GS\Service\Service\FilesystemService'
+        autowire:   true
+        
+    GS\Service\Service\HtmlService:
+        class:      'GS\Service\Service\HtmlService'
+        autowire:   true
+        
+    GS\Service\Service\Parser:
+        class:      'GS\Service\Service\Parser'
+        autowire:   true
+        
+    GS\Service\Service\RandomPassword:
+        class:      'GS\Service\Service\RandomPassword'
+        autowire:   true
+        
+    GS\Service\Service\RegexService:
+        class:      'GS\Service\Service\RegexService'
+        autowire:   true
+        
+    GS\Service\Service\ServiceContainer:
+        class:      'GS\Service\Service\ServiceContainer'
+        autowire:   true
+        
+    GS\Service\Service\StringNormalizer:
+        class:      'GS\Service\Service\StringNormalizer'
+        autowire:   true
+        
+    GS\Service\Service\StringService:
+        class:      'GS\Service\Service\StringService'
+        autowire:   true
+    ###< SERVICES ###

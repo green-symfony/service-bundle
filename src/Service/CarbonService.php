@@ -36,7 +36,7 @@ use GS\Service\IsoFormat\{
 class CarbonService
 {
     public function __construct(
-        private $carbonFactory,
+        protected $carbonFactory,
     ) {
     }
 
@@ -94,8 +94,6 @@ class CarbonService
     }
 
     /*
-        01-12
-
         May throw \Exception
     */
     public function getMonthWordByNumber(

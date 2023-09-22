@@ -59,6 +59,10 @@ class ServiceContainer
         }
     }
 
+	/*
+		prefix.key1.key2	-> prefix.key1.key2
+		prefix[key1][key2]	-> prefix.key1.key2
+	*/
     public static function getParameterName(
 		string|int|float|null $prefix,
 		string|int|float $key,

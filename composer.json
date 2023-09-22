@@ -1,5 +1,5 @@
 {
-    "name":			"green-symfony/service-bundle",
+    "name": "green-symfony/service-bundle",
     "autoload": {
         "psr-4": {
             "GS\\Service\\": "src/"
@@ -7,16 +7,16 @@
     },
 	"version":		"0.0.0",
     "type":			"symfony-bundle",
-    "description":	"AbstractCommand for extending into Symfony Application.",
-    "authors":		[
+    "description":	"Commonly used symfony services for extending into Symfony Application.",
+    "authors": [
         {
             "name":			"Grigory Koblitsky",
 			"email":		"son5-29@mail.ru"
         }
     ],
-    "keywords":		["green-symfony", "service-bundle"],
-    "license":		"MIT",
-    "require":		{
+    "keywords": ["green-symfony", "service-bundle"],
+    "license": "MIT",
+    "require": {
         "php": ">=7",
         "symfony/property-access": "^6.3",
         "symfony/string": "^6.3",
@@ -28,6 +28,8 @@
         "symfony/http-foundation": "^6.3",
         "symfony/workflow": "^6.3",
         "nesbot/carbon": "^2.70",
-        "symfony/uid": "^6.3"
+        "symfony/uid": "^6.3",
+        "fzaninotto/faker": "^1.5",
+        "symfony/translation": "^6.3"
     }
 }

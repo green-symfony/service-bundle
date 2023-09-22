@@ -28,7 +28,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class ClipService
 {
     public string $contents;
-    private $os;
+    protected $os;
 
     public function __construct()
     {

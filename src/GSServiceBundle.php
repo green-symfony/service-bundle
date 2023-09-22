@@ -10,9 +10,20 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Compiler\ResolveEnvPlaceholdersPass;
+use GS\Service\Service\{
+    ServiceContainer,
+    BoolService,
+    StringNormalizer,
+    ConfigService
+};
 
 class GSServiceBundle extends Bundle
 {
+	public function __construct(
+		//private readonly BoolService $boolService,
+	) {
+	}
+	
     public function getPath(): string
     {
         return \dirname(__DIR__);
@@ -26,7 +37,9 @@ class GSServiceBundle extends Bundle
     public function getContainerExtension(): ?ExtensionInterface
     {
         if ($this->extension === null) {
-            $this->extension = new GSServiceExtension();
+            $this->extension = new GSServiceExtension(
+				//boolService:		$this->boolService,
+			);
         }
 
         return $this->extension;

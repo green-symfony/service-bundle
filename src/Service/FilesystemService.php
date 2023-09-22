@@ -42,23 +42,21 @@ use GS\Service\Service\{
 
 class FilesystemService
 {
-    private OptionsResolver $demandsOptionsResolver;
-    private readonly array $demandsKeys;
-    private readonly Filesystem $filesystem;
-
     public const MAX_FILENAME_LEN = 150;
 
+    protected OptionsResolver $demandsOptionsResolver;
+    protected readonly array $demandsKeys;
+    protected readonly Filesystem $filesystem;
+
     public function __construct(
-        private readonly DumpInfoService $dumpInfoService,
-        private readonly StringService $stringService,
-        private readonly string $partPathFromLocalToPassportBody,
-        //###> without types
-        private string $localDriveForTest,
-        private readonly string $appEnv,
-        private $carbonFactory,
-        private $slugger,
+        protected readonly DumpInfoService $dumpInfoService,
+        protected readonly StringService $stringService,
+        protected string $localDriveForTest,
+        protected readonly string $appEnv,
+        protected $carbonFactory,
+        protected $slugger,
     ) {
-        $this->filesystem           = new Filesystem();
+        $this->filesystem = new Filesystem();
 
         $demands = [
             'exists',
@@ -66,11 +64,12 @@ class FilesystemService
             'isDir',
             'isFile',
         ];
-        $this->demandsKeys              = \array_combine($demands, $demands);
+        $this->demandsKeys = \array_combine($demands, $demands);
 
-        $this->demandsOptionsResolver   = new OptionsResolver();
+        $this->demandsOptionsResolver = new OptionsResolver();
         $this->configureOptions();
     }
+	
 
     //###> API ###
 
@@ -238,7 +237,11 @@ class FilesystemService
 
     public function getDesktopPath(): string
     {
-        $desktop = Path::normalize(\getenv("HOMEDRIVE") . \getenv("HOMEPATH") . "\Desktop");
+        $desktopPath = $this->stringService->getPath(
+			\getenv("HOMEDRIVE"),
+			\getenv("HOMEPATH"),
+			"Desktop",
+		);
 
         $this->throwIfNot(
             [
@@ -246,10 +249,10 @@ class FilesystemService
                 'isAbsolutePath',
                 'isDir',
             ],
-            $desktop,
+            $desktopPath,
         );
 
-        return $desktop;
+        return $desktopPath;
     }
 
     public function firstFileNewer(
@@ -286,8 +289,8 @@ class FilesystemService
             }
         }
 
-        $carbonFirst        = $this->getCarbonByFile($first);
-        $carbonSecond       = $this->getCarbonByFile($second);
+        $carbonFirst = $this->getCarbonByFile($first);
+        $carbonSecond = $this->getCarbonByFile($second);
 
         return $carbonFirst > $carbonSecond;
     }
@@ -334,15 +337,8 @@ class FilesystemService
         $this->filesystem->remove($absPath);
     }
 
-    public function getLocalRootToPassportsBodies(): string
-    {
-        return $this->stringService->getPath(
-            $this->getLocalRoot(),
-            $this->partPathFromLocalToPassportBody,
-        );
-    }
-
     //###< API ###
+	
 
     //###> HELPER ###
 

@@ -6,7 +6,7 @@ use function Symfony\Component\String\u;
 
 use Symfony\Component\HttpFoundation\Response;
 
-final class HtmlService
+class HtmlService
 {
     public function __construct()
     {

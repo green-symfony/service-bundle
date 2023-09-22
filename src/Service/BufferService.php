@@ -2,7 +2,7 @@
 
 namespace GS\Service\Service;
 
-final class BufferService
+class BufferService
 {
     public function __construct()
     {

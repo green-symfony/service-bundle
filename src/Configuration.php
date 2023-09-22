@@ -16,6 +16,8 @@ use GS\Service\Service\{
 class Configuration implements ConfigurationInterface
 {
     public function __construct(
+        private $locale,
+        private $timezone,
     ) {
     }
 
@@ -26,8 +28,30 @@ class Configuration implements ConfigurationInterface
 		$treeBuilder->getRootNode()
             ->children()
 			
-				//###> ConfigService TODO: 0
-                ->arrayNode(ConfigService::CONFIG_SERVICE_KEY)
+				//###> ConfigService TODO: 0, check if ask when there is a default value
+                
+				->scalarNode('locale')
+					->isRequired()
+                    ->info('Locale for services')
+                    #->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
+                    ->defaultValue($this->locale)
+                ->end()
+
+                ->scalarNode('timezone')
+					->isRequired()
+                    ->info('Timezone for services')
+                    ->defaultValue($this->timezone)
+                ->end()
+				
+				->scalarNode(GSServiceExtension::APP_ENV)
+					->isRequired()
+				->end()
+				
+				->scalarNode(GSServiceExtension::LOCAL_DRIVE_FOR_TEST)
+					->isRequired()
+				->end()
+                
+				->arrayNode(ConfigService::CONFIG_SERVICE_KEY)
 					->arrayPrototype()
 					->defaultValue([])
 						->children()

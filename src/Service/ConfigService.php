@@ -43,7 +43,7 @@ use GS\Service\Service\{
 	This class allows to get some value from package configuration
 */
 // as a service only for the sake of autowiring
-abstract class ConfigService
+class ConfigService
 {
 	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
 	public const PACK_NAME				= 'pack_name';
@@ -56,12 +56,12 @@ abstract class ConfigService
 			...
 		]
 	*/
-	private array $loadedPackageFilenameData = [];
+	protected array $loadedPackageFilenameData = [];
 	
 	public function __construct(
-		private readonly BoolService $boolService,
-		private readonly StringService $stringService,
-		private readonly string $projectDir,
+		protected readonly BoolService $boolService,
+		protected readonly StringService $stringService,
+		protected readonly string $projectDir,
 		/*
 			[
 				[
@@ -70,7 +70,7 @@ abstract class ConfigService
 				],
 			]
 		*/
-		private readonly array $packageFilenames,
+		protected readonly array $packageFilenames,
 	) {
 		//TODO: remove
 		\dd(
@@ -139,6 +139,11 @@ abstract class ConfigService
 			$propertyAccessString,
 		);
 	}
+
+    public function getCurrentIp(): string
+    {
+        return (string) u(\gethostbyname(\gethostname()))->ensureStart('//');
+    }
 	
 	// ###< API ###
 	
@@ -150,9 +155,11 @@ abstract class ConfigService
 	): ?array {
 		$configFromLoadedConfig = null;
 		
+		$filename = $this->getFilenameByPackname($packName);
+		
 		if (empty($this->loadedPackageFilenameData)) return null;
 		
-		$config = $this->boolService->isGet($this->loadedPackageFilenameData, $packName);
+		$config = $this->boolService->isGet($this->loadedPackageFilenameData, $filename);
 		if ($config != false) $configFromLoadedConfig = $config;
 		
 		return $configFromLoadedConfig;
@@ -160,14 +167,12 @@ abstract class ConfigService
 	
 	private function getCalculatedConfig(
 		string $packName,
+		string $ext,
 		?string $relPath = null,
-		?string $ext = null,
 	): array {
-		$relPath = $this->getDefaultPackRelPathIfNull($relPath);
-		//TODO: check correct mime...
-		$ext ??= $this->stringService->getExtFromPath($packName) ?? '.yaml';
+		$filename = $this->getFilenameByPackname($packName);
 		
-		$filename = (string) u($packName)->ensureEnd($ext);
+		$relPath = $this->getDefaultPackRelPathIfNull($relPath);
 		
 		// Abs path for locator
 		$absPath = Path::makeAbsolute(
@@ -194,7 +199,7 @@ abstract class ConfigService
 			)
 		);
 		
-		$uniqPackId = $this->getUniqPackId($packName, $relPath);
+		$uniqPackId = $this->getUniqPackId($filename, $relPath);
 		$this->configureConfigOptions(
 			$uniqPackId,
 			$resolver,
@@ -230,20 +235,34 @@ abstract class ConfigService
 		
 		$this->loadedPackageFilenameData[$this->getUniqPackId($packName, $packRelPath)] 
 			= $this->getCalculatedConfig(
-				$packName,
-				$packRelPath,
-				$ext,
+				packName:		$packName,
+				ext:			$ext,
+				packRelPath:	$packRelPath,
 			)
 		;
 		return $this;
 	}
 	
+	private function getFilenameByPackname(
+		string $packName,
+	): string {
+		//TODO: check correct mime...
+		$ext ??= $this->stringService->getExtFromPath($packName) ?? '.yaml';
+		return (string) u($packName)->ensureEnd($ext);
+	}
+	
+	/*
+		PackId gets with ext
+		even if user haven't passed it
+	*/
 	private function getUniqPackId(
 		string $packName,
 		?string $packRelPath = null,
 	): string {
+		$filename = $this->getFilenameByPackname($packName);
 		$packRelPath = $this->getDefaultPackRelPathIfNull($packRelPath);
-		return $this->stringService->getPath($packRelPath, $packName);
+		
+		return $this->stringService->getPath($packRelPath, $filename);
 	}
 	
 	private function getDefaultPackRelPathIfNull(
