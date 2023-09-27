@@ -42,7 +42,6 @@ use GS\Service\Service\{
 /**
 	This class allows to get some value from package configuration
 */
-// as a service only for the sake of autowiring
 abstract class ConfigService
 {
 	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
@@ -72,11 +71,6 @@ abstract class ConfigService
 		*/
 		protected readonly array $packageFilenames,
 	) {
-		//TODO: remove
-		\dd(
-			'AUTOWIRING $packageFilenames',
-			$packageFilenames,
-		);
 		$this->initPackageFilenameDataByPackageFilenames();
 	}
 	
@@ -237,7 +231,7 @@ abstract class ConfigService
 			= $this->getCalculatedConfig(
 				packName:		$packName,
 				ext:			$ext,
-				packRelPath:	$packRelPath,
+				relPath:		$packRelPath,
 			)
 		;
 		return $this;

@@ -26,7 +26,7 @@ use Symfony\Component\Yaml\{
 use Symfony\Component\HttpFoundation\{
 	Request,
 	RequestStack,
-	File,
+	File\File,
 	Session\Session
 };
 use Symfony\Component\Config\FileLocator;
