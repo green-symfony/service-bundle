@@ -43,7 +43,7 @@ use GS\Service\Service\{
 	This class allows to get some value from package configuration
 */
 // as a service only for the sake of autowiring
-class ConfigService
+abstract class ConfigService
 {
 	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
 	public const PACK_NAME				= 'pack_name';

@@ -53,8 +53,9 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     public function prepend(ContainerBuilder $container)
     {
         $this->loadYaml($container, [
+            ['config', 'services.yaml'],
             ['config/packages', 'translation.yaml'],
-            ['config/packages', 'monolog.yaml'],
+            //['config/packages', 'monolog.yaml'],
         ]);
     }
 
@@ -80,7 +81,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     public function loadInternal(array $config, ContainerBuilder $container)
     {
         $this->loadYaml($container, [
-            ['config', 'services.yaml'],
+            //['config', 'services.yaml'],
         ]);
         $this->setParametersFromBundleConfiguration(
 			$config,
@@ -168,43 +169,34 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 				$configsServiceResult = [];
 				$configsService = $pa->getValue($config, '['.$key.']');
 				foreach($configsService as $configService) {
-					foreach($configService as $configServiceEl) {
-						/*
-						$packName = $this->boolService->isGet(
-							$configServiceEl,
-							ConfigService::PACK_NAME,
-						);
-						$packRelPath = $this->boolService->isGet(
-							$configServiceEl,
-							ConfigService::PACK_REL_PATH,
-						);
-						*/
-						$packName = null;
-						if (isset($configServiceEl[ConfigService::PACK_NAME])) {
-							$packName = $configServiceEl[ConfigService::PACK_NAME];
-						}
-						$packRelPath = null;
-						if (isset($configServiceEl[ConfigService::PACK_REL_PATH])) {
-							$packRelPath = $configServiceEl[ConfigService::PACK_REL_PATH];
-						}
-						
-						//TODO: 0
-						\dd(
-							'$packName',
-							$packName,
-							'$packRelPath',
-							$packRelPath,
-						);
-						if ($packName == false) continue;
-						if ($packRelPath == false) {
-							$packRelPath = null;
-						}
-						
-						$configsServiceResult []= [
-							ConfigService::PACK_NAME =>		$packName,
-							ConfigService::PACK_REL_PATH =>	$packRelPath,
-						];
+					/*
+					$packName = $this->boolService->isGet(
+						$configService,
+						ConfigService::PACK_NAME,
+					);
+					$packRelPath = $this->boolService->isGet(
+						$configService,
+						ConfigService::PACK_REL_PATH,
+					);
+					*/
+					$packName = null;
+					if (isset($configService[ConfigService::PACK_NAME])) {
+						$packName = $configService[ConfigService::PACK_NAME];
 					}
+					$packRelPath = null;
+					if (isset($configService[ConfigService::PACK_REL_PATH])) {
+						$packRelPath = $configService[ConfigService::PACK_REL_PATH];
+					}
+					
+					if ($packName == false) continue;
+					if ($packRelPath == false) {
+						$packRelPath = null;
+					}
+					
+					$configsServiceResult []= [
+						ConfigService::PACK_NAME =>		$packName,
+						ConfigService::PACK_REL_PATH =>	$packRelPath,
+					];
 				}
                 return $configsServiceResult;
             },
@@ -215,11 +207,11 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         );
 		
 		/* to use in this object */
-		$this->localeParameter		= new Parameter(ServiceContainer::getParameterName(
+		$this->localeParameter = new Parameter(ServiceContainer::getParameterName(
 			self::PREFIX,
 			self::LOCALE,
 		));
-		$this->timezoneParameter	= new Parameter(ServiceContainer::getParameterName(
+		$this->timezoneParameter = new Parameter(ServiceContainer::getParameterName(
 			self::PREFIX,
 			self::TIMEZONE,
 		));

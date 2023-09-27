@@ -1,13 +1,14 @@
 ###> JUST EXAMPLE, copy it into your config ###
 
-locale:                     '%env(LOCALE)%'
+gs_service:
+    locale:                     '%env(LOCALE)%'
 
-timezone:                   '%env(TIMEZONE)%'
+    timezone:                   '%env(TIMEZONE)%'
 
-app_env:                    '%env(APP_ENV)%'
+    app_env:                    '%env(APP_ENV)%'
 
-local_drive_for_test:       '%env(LOCAL_DRIVE_FOR_TEST)%'
+    local_drive_for_test:       '%env(LOCAL_DRIVE_FOR_TEST)%'
 
-load_packs_configs:
-    -   pack_name:      'monolog'
-        pack_rel_path:  ~
+    load_packs_configs:
+        -   pack_name:      'monolog'
+            pack_rel_path:  ~

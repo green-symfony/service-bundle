@@ -14,7 +14,6 @@ services:
             ###> VALUES ###
             # TODO: it's hard, redo it with !php/const and concat
             $appEnv:                    '%gs_service.app_env%'
-            $localDriveForTest:         '%gs_service.local_drive_for_test%'
             $projectDir:                '../../../../%kernel.project_dir%'
             $packageFilenames:          '%gs_service.load_packs_configs%'
             ###< VALUES ###
@@ -26,7 +25,7 @@ services:
             ###< SYMFONY SERVICES ###
             
             ###> BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
-            $faker:                     '@gs_service.faker'
+            #$faker:                     '@gs_service.faker'
             $carbonFactory:             '@gs_service.carbon_factory'
             ###< BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
             

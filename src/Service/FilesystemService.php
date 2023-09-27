@@ -51,7 +51,8 @@ class FilesystemService
     public function __construct(
         protected readonly DumpInfoService $dumpInfoService,
         protected readonly StringService $stringService,
-        protected string $localDriveForTest,
+		#[Autowire(value: 'gs_service.local_drive_for_test')]
+        protected readonly string $localDriveForTest,
         protected readonly string $appEnv,
         protected $carbonFactory,
         protected $slugger,

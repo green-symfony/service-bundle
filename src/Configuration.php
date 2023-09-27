@@ -30,14 +30,14 @@ class Configuration implements ConfigurationInterface
 			
 				//###> ConfigService TODO: 0, check if ask when there is a default value
                 
-				->scalarNode('locale')
+				->scalarNode(GSServiceExtension::LOCALE)
 					->isRequired()
                     ->info('Locale for services')
                     #->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
                     ->defaultValue($this->locale)
                 ->end()
 
-                ->scalarNode('timezone')
+                ->scalarNode(GSServiceExtension::TIMEZONE)
 					->isRequired()
                     ->info('Timezone for services')
                     ->defaultValue($this->timezone)
@@ -53,7 +53,6 @@ class Configuration implements ConfigurationInterface
                 
 				->arrayNode(ConfigService::CONFIG_SERVICE_KEY)
 					->arrayPrototype()
-					->defaultValue([])
 						->children()
 							->scalarNode(ConfigService::PACK_NAME)
 								->info('it\'s a name of the pack with or without .yaml extension')
