@@ -42,16 +42,16 @@ class BoolService
 
     //###> API ###
 
-    /*
-        If key is exists in array and it isn't false value, give it!
-    */
+	/*
+		Returns null if the key doesn't exist
+	*/
     public function isGet(
         array $array,
         string $key,
-    ): bool|string {
-        return (isset($array[$key]) && $array[$key] != false/* not !== */)
+    ): mixed {
+        return isset($array[$key])
             ? $array[$key]
-            : false
+            : null
         ;
     }
 	
