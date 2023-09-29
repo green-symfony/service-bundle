@@ -26,6 +26,14 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder(GSServiceExtension::PREFIX);
 
 		$treeBuilder->getRootNode()
+			->info(''
+				. 'You can copy this example: "'
+				. \dirname(__DIR__)
+				. DIRECTORY_SEPARATOR . 'config'
+				. DIRECTORY_SEPARATOR . 'packages'
+				. DIRECTORY_SEPARATOR . 'gs_service.yaml'
+				. '"'
+			)
             ->children()
 			
 				//###> ConfigService TODO: 0, check if ask when there is a default value
