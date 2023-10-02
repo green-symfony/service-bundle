@@ -231,9 +231,30 @@ class FilesystemService
         return Path::normalize($smallestDrive);
     }
 
-    public function mkdir(string|iterable $dirs, int $mode = 0766): void
-    {
-        $this->filesystem->mkdir($dirs, $mode);
+    public function mkdir(
+		string $dir,
+		int $mode = 0777,
+		bool $recursive = true,
+	): void {
+		//###> Don't touch if exists
+		if (\is_dir($dir)) return;
+		
+		//###> recursive
+		if ($recursive) {
+			$this->mkdirRecursive($dir, $mode);
+			return;
+		}
+		
+		$prevDir = $this->stringService->getDirectory($dir);
+		
+		//###> not recursive
+		if (\is_dir($prevDir)) {
+			\mkdir($dir, $mode);
+		} else {
+			throw new \Exception(
+				'Путь "'.$dir.'" не был создан, так как не существует "'.$prevDir.'"',
+			);			
+		}
     }
 
     public function getDesktopPath(): string
@@ -343,6 +364,18 @@ class FilesystemService
 
     //###> HELPER ###
 
+    private function mkdirRecursive(
+		string $dir,
+		int $mode,
+	): void {
+		//###> Don't touch if exists
+		if (\is_dir($dir)) return; /* EXIT POINT WHEN PREVIOUS EXISTS */
+		
+		$prevDir = $this->stringService->getDirectory($dir);
+		$this->mkdirRecursive($prevDir, $mode);
+		\mkdir($dir, $mode);
+	}
+	
     private function getCarbonByFile(
         \SplFileInfo|string $file,
     ): Carbon {
@@ -421,8 +454,8 @@ class FilesystemService
     ): array {
         $madeResults = [];
 
-        $defaultPredicatForMakeIt       = $override || $this->firstFileNewer(first: $from, second: $to);
-        $exactlyMakeIt                  = ($isMakeIt === true) || $defaultPredicatForMakeIt;
+        $defaultPredicatForMakeIt = $override || $this->firstFileNewer(first: $from, second: $to);
+        $exactlyMakeIt = ($isMakeIt === true) || $defaultPredicatForMakeIt;
 
         if ($exactlyMakeIt) {
             $this->throwIfNot(
@@ -441,13 +474,12 @@ class FilesystemService
             );
 
             // from -> tmp
-
             try {
                 $toTmp = $this->tempnam($to);
             } catch (\Exception $e) {
                 return $madeResults;
             }
-
+			
             $this->detectMakeTypeAndExecute(
                 $type,
                 $from,
@@ -455,9 +487,8 @@ class FilesystemService
                 $exactlyMakeIt,
             );
 
-            // tmp -> realTo
-            // use dirname instead of $this->stringService->getDirectory for host address
-            $this->filesystem->mkdir($this->stringService->getDirectory($to), 0766);
+            // tmp -> realTo $this->filesystem->
+            $this->mkdir($this->stringService->getDirectory($to));
 
             // before rename need to remove $to
             if (\is_file($to)) {

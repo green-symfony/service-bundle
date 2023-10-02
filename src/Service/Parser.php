@@ -27,7 +27,11 @@ class Parser
 			}
 		}
 		
-		return [$firstName, $lastName, $patronymic];
+		return [
+			$firstName,
+			$lastName,
+			$patronymic,
+		];
     }
 	
     //###< API ###
