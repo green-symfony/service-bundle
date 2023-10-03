@@ -263,8 +263,7 @@ abstract class ConfigService
 		string $filename,
 	): string {
 		$defExt = (string) u(static::DEFAULT_PACK_EXT)->ensureStart('.');
-		//TODO: check correct mime...
-		return $this->stringService->getExtFromPath($filename) ?? $defExt;
+		return $this->stringService->getExtFromPath($filename, withDotAtTheBeginning: true) ?? $defExt;
 	}
 	
 	private function getUniqPackId(

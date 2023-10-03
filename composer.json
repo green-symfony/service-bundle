@@ -18,18 +18,17 @@
     "license": "MIT",
     "require": {
         "php": ">=7",
-        "symfony/property-access": "^6.3",
-        "symfony/string": "^6.3",
-        "symfony/config": "^6.3",
-        "symfony/finder": "^6.3",
-        "symfony/options-resolver": "^6.3",
-        "symfony/filesystem": "^6.2",
-        "symfony/yaml": "^6.3",
-        "symfony/http-foundation": "^6.3",
-        "symfony/workflow": "^6.3",
         "nesbot/carbon": "^2.70",
-        "symfony/uid": "^6.3",
         "fzaninotto/faker": "^1.5",
-        "symfony/translation": "^6.3"
+        "symfony/property-access": "6.2.*",
+        "symfony/string": "6.2.*",
+        "symfony/config": "6.2.*",
+        "symfony/finder": "6.2.*",
+        "symfony/options-resolver": "6.2.*",
+        "symfony/filesystem": "6.2.*",
+        "symfony/yaml": "6.2.*",
+        "symfony/http-foundation": "6.2.*",
+        "symfony/workflow": "6.2.*",
+        "symfony/translation": "6.2.*"
     }
 }

@@ -259,8 +259,10 @@ class StringService
 
     public function getFilenameWithExt(
         string $pathname,
-        string $ext,
+        ?string $ext,
     ): string {
+		if (\is_null($ext)) return $pathname;
+		
         return ''
             . $this->getPathnameWithoutExt(\basename($pathname))
             . ((string) u(\mb_strtolower($ext))->ensureStart('.'))
@@ -369,57 +371,84 @@ class StringService
 	}
 	
 	/*
-		TODO: 0
-		Check working of this method
+		always prefers EXISTING FILES
+		if $amongExtensions !== null PREFER IT instad of $path possible ext
 	*/
 	public function getExtFromPath(
 		string $path,
-		bool $preferSubstr = true,
 		bool $withDotAtTheBeginning = true,
-		bool $checkPath = false,
+		?array $amongExtensions = null,
 	): ?string {
-		//###> $mimeExt
-		try {
-			$file = new File(
-				$path,
-				$checkPath,
-			);
-			$mimeExt = $file->guessExtension();
-			
-			//TODO: remove
-			\dd(
-				'$mimeExt',
-				$mimeExt,
-			);
-		} catch(\Exception $e) {
-			$mimeExt = null;
-		}
-		//###< $mimeExt
+		$ext = null;
 		
 		//###> $substrExt
 		$substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
-		if (!\str_starts_with($substrExt, '.')) $substrExt = null;
-		//###< $substrExt
+		if ($substrExt == $path) $substrExt = null;
+		//###<
 		
-		//###> PREFERENCES
-		$ext = null;
-		if ($mimeExt != null) $ext = $mimeExt;
-		if ($preferSubstr && $substrExt != null) $ext = $substrExt;
-		//###< PREFERENCES
+		//###> $amongExt
+		$amongExt = null;
+		$amongExtensions ??= [];
+		$file = $path;
+		if (!empty($amongExtensions) && $substrExt !== null) {
+			\array_unshift($amongExtensions, $substrExt);
+		}
+		foreach($amongExtensions as $cycleEmongExt) {
+			$cycleEmongExt = (string) $cycleEmongExt;
+			$file = $this->makeAbsolute(
+				(string) u($this->getFilenameWithExt($file, $cycleEmongExt)),
+				$this->getDirectory($file),
+			);
+			
+			if (\is_file($file)) {
+				$amongExt = $cycleEmongExt;
+				unset($cycleEmongExt);
+				break;
+			}
+		}
+		//###<
+		
+		//###> PREFERENCES /* != */
+		if ($substrExt != null) $ext = $substrExt;
+		if ($amongExt != null) $ext = $amongExt;
+		//###< PREFERENCES (MORE IMPORTANT)
 		
 		
 		//###> DOT
-		if ($withDotAtTheBeginning) {
-			if (!\is_null($ext)) $ext = (string) u($ext)->ensureStart('.');
-		} else {
-			$ext = \ltrim($ext, '.');
+		if ($ext !== null) {
+			if ($withDotAtTheBeginning) {
+				if (!\is_null($ext)) $ext = (string) u($ext)->ensureStart('.');
+			} else {
+				$ext = \ltrim($ext, '.');
+			}			
 		}
 		//###< DOT
 		
 		return $ext;
 	}
+	
+	/*
+		returns null when $string doesn't contain the pattern
+	*/
+    public function getFromCallbackIfStringLikeRegex(
+		string $string,
+		array|string $regexs,
+		callable|\Closure $callback,
+	): mixed {
+		if (\is_string($regexs)) $regexs = [$regexs];
+		
+		foreach($regexs as $regex) {
+			if (\preg_match($regex, $string) === 1) {
+				return $callback(
+					$regex,
+				);
+			}
+		}
+		return null;
+	}
 
     //###< API ###
+	
 
     //###> HELPER ###
 

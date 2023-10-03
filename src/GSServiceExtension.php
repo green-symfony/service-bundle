@@ -55,7 +55,6 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         $this->loadYaml($container, [
             ['config', 'services.yaml'],
             ['config/packages', 'translation.yaml'],
-            //['config/packages', 'monolog.yaml'],
         ]);
     }
 
