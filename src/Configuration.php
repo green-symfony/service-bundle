@@ -39,16 +39,14 @@ class Configuration implements ConfigurationInterface
 				//###> ConfigService TODO: 0, check if ask when there is a default value
                 
 				->scalarNode(GSServiceExtension::LOCALE)
-					->isRequired()
+					->isRequired()//->defaultValue($this->locale)
                     ->info('Locale for services')
-                    #->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
-                    ->defaultValue($this->locale)
+                    //->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
                 ->end()
 
                 ->scalarNode(GSServiceExtension::TIMEZONE)
-					->isRequired()
+					->isRequired()//->defaultValue($this->timezone)
                     ->info('Timezone for services')
-                    ->defaultValue($this->timezone)
                 ->end()
 				
 				->scalarNode(GSServiceExtension::APP_ENV)
@@ -60,14 +58,15 @@ class Configuration implements ConfigurationInterface
 				->end()
                 
 				->arrayNode(ConfigService::CONFIG_SERVICE_KEY)
+					->info('the packs whose config will be loaded when GS\\Service\\Service\\ConfigService creates')
 					->arrayPrototype()
 						->children()
 							->scalarNode(ConfigService::PACK_NAME)
-								->info('it\'s a name of the pack with or without .yaml extension')
+								->info('it\'s a name of the pack with or without the .yaml extension')
 								->cannotBeEmpty()
 							->end()
 							->scalarNode(ConfigService::PACK_REL_PATH)
-								->info('it\'s a relative path of pack file')
+								->info('it\'s a relative path of the pack file')
 								->defaultValue(ConfigService::DEFAULT_PACK_REL_PATH)
 							->end()
 						->end()
