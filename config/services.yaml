@@ -12,7 +12,6 @@ services:
         
         bind:
             ###> VALUES ###
-            # TODO: it's hard, redo it with !php/const and concat
             $appEnv:                    '%gs_service.app_env%'
             $projectDir:                '../../../../%kernel.project_dir%'
             $packageFilenames:          '%gs_service.load_packs_configs%'

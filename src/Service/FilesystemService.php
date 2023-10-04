@@ -149,7 +149,9 @@ class FilesystemService
         );
     }
 
-    // TODO: it works, but redo
+	/*
+		Gets ROOT DRIVE where this project situates
+	*/
     public function getLocalRoot(): string
     {
         if ($this->appEnv === 'test') {

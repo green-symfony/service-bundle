@@ -36,8 +36,6 @@ class Configuration implements ConfigurationInterface
 			)
             ->children()
 			
-				//###> ConfigService TODO: 0, check if ask when there is a default value
-                
 				->scalarNode(GSServiceExtension::LOCALE)
 					->isRequired()//->defaultValue($this->locale)
                     ->info('Locale for services')
