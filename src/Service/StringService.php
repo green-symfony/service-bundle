@@ -292,7 +292,11 @@ class StringService
         string $path,
         string $basePath,
     ): string {
-        $absPath = Path::makeAbsolute($path, $basePath);
+		if (Path::isAbsolute($path)) {
+			$absPath = $path;
+		} else {
+			$absPath = Path::makeAbsolute($path, $basePath);
+		}			
 
         //###> CONSIDER NETWORK PATHS
         if ($this->isNetworkPath($absPath)) {
@@ -371,37 +375,39 @@ class StringService
 	}
 	
 	/*
-		always prefers EXISTING FILES
-		if $amongExtensions !== null PREFER IT instad of $path possible ext
+		Can return NOT EXISTING $ext
+			IF $onlyExistingPath == false
+		
+		Always prefers EXISTING $path $ext
 	*/
 	public function getExtFromPath(
 		string $path,
+		bool $onlyExistingPath,
 		bool $withDotAtTheBeginning = true,
 		?array $amongExtensions = null,
 	): ?string {
 		$ext = null;
 		
-		//###> $substrExt
+		//###> $substrExt for trying to get a $resultExt
 		$substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
 		if ($substrExt == $path) $substrExt = null;
 		//###<
 		
-		//###> $amongExt
-		$amongExt = null;
+		//###> $resultExt
+		$resultExt = null;
 		$amongExtensions ??= [];
-		$file = $path;
 		if (!empty($amongExtensions) && $substrExt !== null) {
 			\array_unshift($amongExtensions, $substrExt);
 		}
-		foreach($amongExtensions as $cycleEmongExt) {
+		foreach($amongExtensions as $k => $cycleEmongExt) {
 			$cycleEmongExt = (string) $cycleEmongExt;
 			$file = $this->makeAbsolute(
-				(string) u($this->getFilenameWithExt($file, $cycleEmongExt)),
-				$this->getDirectory($file),
+				(string) u($this->getFilenameWithExt($path, $cycleEmongExt)),
+				$this->getDirectory($path),
 			);
 			
 			if (\is_file($file)) {
-				$amongExt = $cycleEmongExt;
+				$resultExt = $cycleEmongExt;
 				unset($cycleEmongExt);
 				break;
 			}
@@ -409,8 +415,8 @@ class StringService
 		//###<
 		
 		//###> PREFERENCES /* != */
-		if ($substrExt != null) $ext = $substrExt;
-		if ($amongExt != null) $ext = $amongExt;
+		if (!$onlyExistingPath && $substrExt != null) $ext = $substrExt;
+		if ($resultExt != null) $ext = $resultExt;
 		//###< PREFERENCES (MORE IMPORTANT)
 		
 		
