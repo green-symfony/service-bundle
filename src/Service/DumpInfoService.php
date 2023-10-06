@@ -3,36 +3,42 @@
 namespace GS\Service\Service;
 
 use Symfony\Component\Finder\{
-	Finder
+    Finder
 };
 use GS\Service\Service\{
     StringService
 };
 use GS\Command\Command\{
-	AbstractCommand
+    AbstractCommand
 };
+use Symfony\Contracts\Translation\TranslatorInterface;
+use GS\Service\Service\ConfigService;
 
 class DumpInfoService
 {
     public function __construct(
         protected readonly StringService $stringService,
+        protected readonly TranslatorInterface $t,
+        protected readonly ConfigService $configService,
     ) {
     }
 
-    //###> API ###
 
+    //###> API ###
+	
+	/**/
     public function dumpInfoAboutCurrentIp(
         AbstractCommand $command,
     ): void {
         $command->getIo()->note([
-            'Текущий ip:'
+            $this->t->trans('gs_service.service.current_ip') . ':'
             . ' "' . $this->stringService->replaceSlashWithSystemDirectorySeparator(
-                $this->configsService->getCurrentIp()
+                $this->configService->getCurrentIp()
             ) . '"',
         ]);
     }
 
-	/* Dumps paths */
+    /* Dumps paths */
     public function dumpInfo(
         AbstractCommand $command,
         string|array $from,
@@ -226,8 +232,8 @@ class DumpInfoService
     ): void {
         foreach ($finder as $file) {
             $command->getIo()->info(
-				$file->getRealPath(),
-			);
+                $file->getRealPath(),
+            );
         }
         \dd('END');
     }

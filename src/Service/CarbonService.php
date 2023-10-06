@@ -13,13 +13,13 @@ use Symfony\Component\Filesystem\{
     Filesystem
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -41,31 +41,40 @@ class CarbonService
     }
 
     //###> API ###
-	
+
+	/*
+		Gets string by Carbon
+	*/
     public static function isoFormat(
         Carbon|CarbonImmutable $carbon,
         ?GSIsoFormat $isoFormat = null,
         bool $isTitle = true,
     ): string {
-        $isoFormat  ??= new GSLLLIsoFormat();
-        $tz         = $carbon->tz;
+        $isoFormat ??= new GSLLLIsoFormat();
+        $tz = $carbon->tz;
 
         return (string) u($carbon->isoFormat($isoFormat::get()) . ' [' . $tz . ']')->title($isTitle);
     }
 
+	/*
+		Gets new Carbon by $origin Carbon
+	*/
     public static function forUser(
         Carbon|CarbonImmutable $origin,
         \DateTimeImmutable|\DateTime $sourceOfMeta = null,
         ?string $tz = null,
         ?string $locale = null,
     ): Carbon|CarbonImmutable {
-        $carbonClone            = ($origin instanceof Carbon) ? $origin->clone() : $origin;
+        $carbonClone = ($origin instanceof Carbon) ? $origin->clone() : $origin;
         return $sourceOfMeta ?
             $carbonClone->tz($sourceOfMeta->tz)->locale($sourceOfMeta->locale) :
             $carbonClone->tz($tz ?? $carbonClone->tz)->locale($locale ?? $carbonClone->locale)
         ;
     }
 
+	/*
+		Gets number of the current year
+	*/
     public function getCurrentYear(): string|int
     {
         $carbon = $this->carbonFactory->make(

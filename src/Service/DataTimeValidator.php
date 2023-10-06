@@ -5,7 +5,7 @@ namespace GS\Service\Service;
 class DataTimeValidator
 {
     //###> API ###
-	
+
     /**
         default php name of timezone
     */

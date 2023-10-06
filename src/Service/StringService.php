@@ -8,8 +8,8 @@ use function Symfony\Component\String\{
 };
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -20,14 +20,14 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	File\File,
-	Session\Session
+    Request,
+    RequestStack,
+    File\File,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -35,54 +35,86 @@ use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use GS\Service\Service\{
+    ArrayService,
     BoolService,
+    RegexService,
     CarbonService
 };
 
 class StringService
 {
+	//###> YOU CAN OVERRIDE IT ###
     public const DOP_WIDTH_FOR_STR_PAD = 10;
-
-    public const EMOJI_START_RANGE      = 0x1F400;
-    public const EMOJI_END_RANGE        = 0x1F440;
+    public const EMOJI_START_RANGE = 0x1F400;
+    public const EMOJI_END_RANGE = 0x1F440;
+	//###< YOU CAN OVERRIDE IT ###
 
     public function __construct(
         protected readonly ArrayService $arrayService,
         protected readonly CarbonService $carbonService,
         protected readonly BoolService $boolService,
-        protected readonly array $appPassportBodies,
-        protected readonly array $configMonths,
+        protected readonly RegexService $regexService,
         protected readonly string $yearRegex,
         protected readonly string $yearRegexFull,
-        protected readonly string $ppiConfigBurFilePrefixRegex,
-        protected readonly string $ppiConfigBurFileCountFiguresRegex,
-        protected readonly string $ppiConfigBurExtRegex,
-        protected readonly string $ppiConfigBurCorrectFilePrefix,
-        protected readonly string $ppiConfigBurCorrectExt,
         protected readonly string $ipV4Regex,
         protected readonly string $slashOfIpRegex,
     ) {
     }
+	
 
     //###> API ###
 
+	/*
+		Do strings contain the same text?
+		
+		The empty $string doesn't contain into any not empty string!
+	*/
     public function strContains(
         string $haystack,
         string $needle,
     ): bool {
-        $haystack       = Path::normalize(\mb_strtolower(\str_replace(' ', '', $haystack)));
-        $needle         = Path::normalize(\mb_strtolower(\str_replace(' ', '', $needle)));
+		$clear = static fn($string): string
+			=> Path::normalize(
+				\mb_strtolower(
+					\str_replace(
+						' ',
+						'',
+						\trim(
+							(string) $string,
+						)
+					)
+				)
+			);
+		
+        $haystack = $clear($haystack);
+        $needle = $clear($needle);
+		
+		if ($haystack == '' && $needle != '') return false;
+		if ($needle == '' && $haystack != '') return false;
 
-        //\dd($haystack, $needle);
         return (\str_contains($haystack, $needle) || \str_contains($needle, $haystack));
     }
 
-    public function finderPathButNotNames(
+	/*
+		Changes the \Symfony\Component\Finder\Finder object state
+		ROOT_PATH/REL_PATH/NAME
+		
+		ROOT_PATH - doesn't consider
+		REL_PATH - must contain names
+		NAME - must not contain names
+	*/
+    public function finderPathMustContainButNotIntoName(
         Finder $finder,
-        array $names,
+        string|array $names,
     ) {
         if (!empty($names)) {
-            $names = \array_map(fn($partOfPath) => '~.*' . $this->getEscapedSpecialCharacters($partOfPath) . '.*~', $names);
+			if (\is_string($names)) $names = [$names];
+            
+			$names = \array_map(
+				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
+				$names,
+			);
+			
             $finder
                 ->path($names)
                 ->notName($names)
@@ -91,15 +123,27 @@ class StringService
     }
 
     /**
-        For \str_pad consider only two-byte text
-
-        \str_pad($lines[0], $this->stringService->getOptimalWidthForStrPad($lines[0], $lines)) . ''
+        For the pad of the \str_pad() function
+		
+		\str_pad() considers only two-byte text.
+	
+		Usage:
+			$lines = [
+				'Text1',
+				'Text2Text2',
+				'Text3Text3Text3',
+			];
+		
+			$partOfTheString = \str_pad(
+				$lines[0],
+				$this->stringService->getOptimalWidthForStrPad($lines[0], $lines)
+			);
     */
     public function getOptimalWidthForStrPad($inputString, array $all): int
     {
         // const part
         $maxLen         = $this->arrayService->getMaxLen($all);
-        $const          = $maxLen + self::DOP_WIDTH_FOR_STR_PAD;
+        $const          = $maxLen + static::DOP_WIDTH_FOR_STR_PAD;
         // dynamic part
         $getCountLettersWithousRussanOnes = static fn($string) => \strlen(\preg_replace('~[а-я]~ui', '', (string) $string));
         $currentLen     = \mb_strlen((string) $inputString) - $getCountLettersWithousRussanOnes($inputString);
@@ -108,84 +152,120 @@ class StringService
         return $currentLen + $const;
     }
 
+	/*
+		Usage:
+		
+		$path = $this->stringService->getPath(
+			'/root/dir1/dir2',
+			'//dir3',
+			'/dir4/',
+			'filename.ext/',
+		); // "/root/dir1/dir2/dir3/dir4/filename.ext"
+		
+		$path = $this->stringService->getPath(
+			'//root/dir1/dir2',
+			'//dir3',
+			'/dir4/',
+			'filename.ext/',
+		); // "//root/dir1/dir2/dir3/dir4/filename.ext"
+		
+		$path = $this->stringService->getPath(
+			'root/dir1/dir2',
+			'/dir3',
+			'/dir4//',
+			'filename.ext/',
+		); // "root/dir1/dir2/dir3/dir4/filename.ext"
+	*/
     public function getPath(
         string ...$parts,
     ): string {
-        $NDS                = Path::normalize(\DIRECTORY_SEPARATOR);
+        $NDS = Path::normalize(\DIRECTORY_SEPARATOR);
 
-        \array_walk($parts, static fn(&$path) => $path = \rtrim(\trim($path), "/\\"));
+		//###> start slashes ###
+		$zeroEl = null;
+		$idx = 0;
+		if (isset(\array_values($parts)[$idx])) {
+			$zeroEl = \array_values($parts)[$idx];
+		}
+		
+		//!
+		$startSlashes = '';
+		if (!\is_null($zeroEl)) {
+			// saves start slashes, for abs path and network ip
+			$startSlashes = \preg_replace(
+				'~^([\\\/]+).*$~',
+				'$1',
+				$zeroEl,
+			);
+			
+			$startSlashesWereNotFound = $startSlashes == $zeroEl;
+			if ($startSlashesWereNotFound) {
+				//!
+				$startSlashes = '';
+			}
+		}
+		//###< start slashes ###
+		
+        \array_walk(
+			$parts,
+			static fn(&$path) => $path = \trim($path, " \n\r\t\v\x00/\\"),
+		);
 
-        $resultPath      = Path::normalize(\implode($NDS, $parts));
-
+        $resultPath = \implode($NDS, $parts);
+		$resultPath = Path::normalize(
+			(string) u($resultPath)->ensureStart($startSlashes),
+		);
+		
         return $resultPath;
     }
 
-    public function getPathnameWithoutExt(string $path): string
-    {
-        return \preg_replace('~[.][a-zа-я]+$~iu', '', $path);
+	/*
+		Gets pathname without extension
+	*/
+    public function getPathnameWithoutExt(
+		string $path,
+	): string {
+        return \preg_replace('~[.].+$~iu', '', $path);
     }
 
+	/*
+		Usage:
+		
+		$string = $this->stringService->replaceSlashWithSystemDirectorySeparator(
+			'/root/dir1\\dir2.//',
+		); // "\root\dir1\dir2.\\"
+	*/
     public function replaceSlashWithSystemDirectorySeparator(
         string|array $path,
     ): string|array {
-        $output = null;
-
         if (\is_array($path)) {
-            \array_walk($path, fn(&$el) => $el = $this->stringreplaceSlashWithSystemDirectorySeparator($el));
-            $output = $path;
-        } elseif (\is_string($path)) {
-            $output = $this->stringreplaceSlashWithSystemDirectorySeparator($path);
+            \array_walk(
+				$path,
+				fn(&$el)
+					=> $el = $this->getStringWithReplacedSlashesWithSystemDirectorySeparator($el),
+			);
+        } else {
+            $path = $this->getStringWithReplacedSlashesWithSystemDirectorySeparator($path);
         }
 
-        return $output;
+        return $path;
     }
 
-    public function getEscapedStrings(array $array): array
-    {
-        return \array_map(
-            fn($partOfPath)
-                => '~.*' . $this->getEscapedSpecialCharacters($partOfPath) . '.*~',
-            $array,
-        );
-    }
-
-    public function getEscapedSpecialCharacters(string $string): string
-    {
-        $string = \strtr(
-            $string,
-            [
-                '|'     => '[|]',
-                '+'     => '[+]',
-                '*'     => '[*]',
-                '?'     => '[?]',
-                '['     => '[[]',
-                ']'     => '[]]',
-                '\\'    => '(?:\\\\|\/)',
-                '/'     => '(?:\\|\/)',
-                '.'     => '[.]',
-                '-'     => '[-]',
-                ')'     => '[)]',
-                '('     => '[(]',
-                '{'     => '[{]',
-                '}'     => '[}]',
-            ]
-        );
-
-        return $string;
-    }
-
+	/*
+		Gets number of the year by substring
+	*/
     public function getYearBySubstr(
         int|string $yearSubstr,
         bool $fullYear = false,
         bool $throwIfNull = false,
     ): ?string {
-        $year           = null;
-        $matches        = [];
+        $year = null;
+        $matches = [];
 
-        $yearSubstr     = (string) $yearSubstr;
+        $yearSubstr = (string) $yearSubstr;
 
-        $currentYear                        = $this->carbonService->getCurrentYear();
-        $firstTwoFiguresFromCurrentYear     = \substr($currentYear, 0, 2);
+        $currentYear = $this->carbonService->getCurrentYear();
+        $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
         $yearRegex = $this->yearRegex;
 
@@ -214,15 +294,18 @@ class StringService
         return $year;
     }
 
+	/*
+		Gets number of the year which is more similar on current one
+	*/
     public function getMoreSimilarOnCurrentYearBySubstr(
         int|string $yearSubstr,
     ): ?string {
-        $year           = null;
-        $matches        = [];
+        $year = null;
+        $matches = [];
 
-        $yearSubstr     = (string) $yearSubstr;
+        $yearSubstr = (string) $yearSubstr;
 
-        $currentYear                        = $this->carbonService->getCurrentYear();
+        $currentYear = $this->carbonService->getCurrentYear();
         $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
         \preg_match_all(
@@ -235,10 +318,13 @@ class StringService
             $years = $matches['year'];
 
             foreach ($years as $_year) {
-                if (\strlen($_year) == 2) {
+				if (\strlen($_year) == 2) {
                     $_year = (int) ($firstTwoFiguresFromCurrentYear . $_year);
                 }
-                if ($year === null || $this->getNumberThatMoreSimilarCurrentYear($year, $_year)) {
+                if (false
+					|| $year === null
+					|| $year != $this->getNumberThatMoreSimilarCurrentYear($year, $_year)
+				) {
                     $year = $_year;
                 }
             }
@@ -247,52 +333,81 @@ class StringService
         return $year;
     }
 
+	/*
+		Gets the string without the substring
+	*/
     public function removeSubstr(
         string $string,
         string $substr,
+        int $limit = -1,
     ): string {
         if (!\str_contains($string, $substr)) {
             return $string;
         }
-        return \preg_replace('~' . $substr . '~', '', $string);
+		$substr = $this->regexService->getEscapedStrings($substr);
+		
+        return \preg_replace('~' . $substr . '~', '', $string, $limit);
     }
-
+	
+	/*
+		Usage:
+		
+		$filename = $this->stringService->getFilenameWithExt(
+			'/root/rel/filename.ext',
+			'....txt',
+		); // "filename.txt"
+	*/
     public function getFilenameWithExt(
         string $pathname,
         ?string $ext,
     ): string {
-		if (\is_null($ext)) return $pathname;
-		
+        if (\is_null($ext)) {
+            return $pathname;
+        }
+
         return ''
             . $this->getPathnameWithoutExt(\basename($pathname))
             . ((string) u(\mb_strtolower($ext))->ensureStart('.'))
         ;
     }
 
+	/*
+		Only for DISK NAME, not for IP
+		
+		returns $rootDrive, but if it's only a letter it ensures end
+	*/
     public function getEnsuredRootDrive(
-        string $rootDrive
+        string $rootDrive,
     ): string {
-        $rootDrive = \trim(\rtrim($rootDrive, '/\\'));
+        $isDrive = static fn($path) => \preg_match('~^[a-zа-я]$~iu', $path) === 1;
 
-        $isRoot = static fn($path) => \preg_match('~^[a-zа-я]$~iu', $path) === 1;
-
-        if (!$isRoot($rootDrive)) {
-            return $rootDrive;
+		$trimmedRootDrive = \trim(
+			\rtrim(
+				$rootDrive,
+				':/\\',
+			)
+		);
+        if (!$isDrive($trimmedRootDrive)) {
+			return $rootDrive;
         }
-
-        return (string) u($rootDrive)->ensureEnd(':/');
+		
+        return (string) u($trimmedRootDrive)->ensureEnd(':/');
     }
 
-    /* WARNING: use this instad of Path::makeAbsolute()
-		
-		dir1/dir2 + //ipV4 => (save // in the beginning)//ip4/dir1/dir2
-		dir1/dir2 + C:/ => C:/dir1/dir2
-	*/
+    /* WARNING: use it instad of Path::makeAbsolute()
+
+        dir1/dir2 + //ipV4 => (save // in the beginning)//ip4/dir1/dir2
+        dir1/dir2 + C:/ => C:/dir1/dir2
+    */
     public function makeAbsolute(
         string $path,
         string $basePath,
     ): string {
-        $absPath = Path::makeAbsolute($path, $basePath);
+        if (Path::isAbsolute($path)) {
+            $absPath = $path;
+        } else {
+            $absPath = Path::makeAbsolute($path, $basePath);
+        }
 
         //###> CONSIDER NETWORK PATHS
         if ($this->isNetworkPath($absPath)) {
@@ -304,13 +419,13 @@ class StringService
         return Path::normalize($absPath);
     }
 
-    /* WARNING: use this instad of Path::getDirectory()
-		
-		//ipV4 => //ipV4
-		//ipV4/dir1/dir2 => //ipV4/dir1
-		C:/ => C:/
-		C:/dir1/dir2 => C:/dir1
-	*/
+    /* WARNING: use it instad of Path::getDirectory()
+
+        //ipV4 => //ipV4
+        //ipV4/dir1/dir2 => //ipV4/dir1
+        C:/ => C:/
+        C:/dir1/dir2 => C:/dir1
+    */
     public function getDirectory(
         string $path,
     ): string {
@@ -325,20 +440,20 @@ class StringService
         return Path::normalize(\dirname($path));
     }
 
-    /* WARNING: use this instad of Path::getRoot()
-		
-		//ipV4/ => //ipV4 (instead of just /)
-		//ipV4/dir1/dir2 => //ipV4
-		C: => C:/
-		C:/dir1/dir2 => C:/
-	*/
+    /* WARNING: use it instad of Path::getRoot()
+
+        //ipV4/ => //ipV4 (instead of just /)
+        //ipV4/dir1/dir2 => //ipV4
+        C: => C:/
+        C:/dir1/dir2 => C:/
+    */
     public function getRoot(
         string $path,
     ): string {
         $isNetworkPath = $this->isNetworkPath(
             $path,
         );
-
+		
         if ($isNetworkPath) {
             $ipRoot = null;
             $ipRootName = 'ipRoot';
@@ -360,95 +475,111 @@ class StringService
         }
         return Path::normalize(Path::getRoot($path));
     }
-	
-	public function getEmoji(): string {
-		[$max, $min] = [
-			self::EMOJI_START_RANGE,
-			self::EMOJI_END_RANGE,
-		];
-		if ($min > $max) [$max, $min] = [$min, $max];
-		return \IntlChar::chr(\random_int($min, $max));
-	}
-	
-	/*
-		always prefers EXISTING FILES
-		if $amongExtensions !== null PREFER IT instad of $path possible ext
-	*/
-	public function getExtFromPath(
-		string $path,
-		bool $withDotAtTheBeginning = true,
-		?array $amongExtensions = null,
-	): ?string {
-		$ext = null;
-		
-		//###> $substrExt
-		$substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
-		if ($substrExt == $path) $substrExt = null;
-		//###<
-		
-		//###> $amongExt
-		$amongExt = null;
-		$amongExtensions ??= [];
-		$file = $path;
-		if (!empty($amongExtensions) && $substrExt !== null) {
-			\array_unshift($amongExtensions, $substrExt);
-		}
-		foreach($amongExtensions as $cycleEmongExt) {
-			$cycleEmongExt = (string) $cycleEmongExt;
-			$file = $this->makeAbsolute(
-				(string) u($this->getFilenameWithExt($file, $cycleEmongExt)),
-				$this->getDirectory($file),
-			);
-			
-			if (\is_file($file)) {
-				$amongExt = $cycleEmongExt;
-				unset($cycleEmongExt);
-				break;
-			}
-		}
-		//###<
-		
-		//###> PREFERENCES /* != */
-		if ($substrExt != null) $ext = $substrExt;
-		if ($amongExt != null) $ext = $amongExt;
-		//###< PREFERENCES (MORE IMPORTANT)
-		
-		
-		//###> DOT
-		if ($ext !== null) {
-			if ($withDotAtTheBeginning) {
-				if (!\is_null($ext)) $ext = (string) u($ext)->ensureStart('.');
-			} else {
-				$ext = \ltrim($ext, '.');
-			}			
-		}
-		//###< DOT
-		
-		return $ext;
-	}
-	
-	/*
-		returns null when $string doesn't contain the pattern
-	*/
+
+	/**/
+    public function getEmoji(): string
+    {
+        [$max, $min] = [
+            static::EMOJI_START_RANGE,
+            static::EMOJI_END_RANGE,
+        ];
+        if ($min > $max) {
+            [$max, $min] = [$min, $max];
+        }
+        return \IntlChar::chr(\random_int($min, $max));
+    }
+
+    /*
+        Can return NOT EXISTING $ext
+            IF $onlyExistingPath == false
+
+        Always prefers EXISTING $path $ext
+    */
+    public function getExtFromPath(
+        string $path,
+        bool $onlyExistingPath,
+        bool $withDotAtTheBeginning = true,
+        ?array $amongExtensions = null,
+    ): ?string {
+        $ext = null;
+
+        //###> $substrExt for trying to get a $resultExt
+        $substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
+        if ($substrExt == $path) {
+            $substrExt = null;
+        }
+        //###<
+
+        //###> $resultExt
+        $resultExt = null;
+        $amongExtensions ??= [];
+        if (!empty($amongExtensions) && $substrExt !== null) {
+            \array_unshift($amongExtensions, $substrExt);
+        }
+        foreach ($amongExtensions as $k => $cycleEmongExt) {
+            $cycleEmongExt = (string) $cycleEmongExt;
+            $file = $this->makeAbsolute(
+                (string) u($this->getFilenameWithExt($path, $cycleEmongExt)),
+                $this->getDirectory($path),
+            );
+
+            if (\is_file($file)) {
+                $resultExt = $cycleEmongExt;
+                unset($cycleEmongExt);
+                break;
+            }
+        }
+        //###<
+
+        //###> PREFERENCES /* != */
+        if (!$onlyExistingPath && $substrExt != null) {
+            $ext = $substrExt;
+        }
+        if ($resultExt != null) {
+            $ext = $resultExt;
+        }
+        //###< PREFERENCES (MORE IMPORTANT)
+
+
+        //###> DOT
+        if ($ext !== null) {
+            if ($withDotAtTheBeginning) {
+                if (!\is_null($ext)) {
+                    $ext = (string) u($ext)->ensureStart('.');
+                }
+            } else {
+                $ext = \ltrim($ext, '.');
+            }
+        }
+        //###< DOT
+
+        return $ext;
+    }
+
+    /*
+        returns null when $string doesn't contain the pattern
+    */
     public function getFromCallbackIfStringLikeRegex(
-		string $string,
-		array|string $regexs,
-		callable|\Closure $callback,
-	): mixed {
-		if (\is_string($regexs)) $regexs = [$regexs];
-		
-		foreach($regexs as $regex) {
-			if (\preg_match($regex, $string) === 1) {
-				return $callback(
-					$regex,
-				);
-			}
-		}
-		return null;
-	}
+        string $string,
+        array|string $regexs,
+        callable|\Closure $callback,
+    ): mixed {
+        if (\is_string($regexs)) {
+            $regexs = [$regexs];
+        }
+
+        foreach ($regexs as $regex) {
+            if (\preg_match($regex, $string) === 1) {
+                return $callback(
+                    $regex,
+                );
+            }
+        }
+        return null;
+    }
 
     //###< API ###
-	
+
 
     //###> HELPER ###
 
@@ -479,8 +610,9 @@ class StringService
         return $secontYear;
     }
 
-    private function stringreplaceSlashWithSystemDirectorySeparator(string $path): string
-    {
+    private function getStringWithReplacedSlashesWithSystemDirectorySeparator(
+		string $path,
+	): string {
         return \str_replace(Path::normalize(\DIRECTORY_SEPARATOR), \DIRECTORY_SEPARATOR, $path);
     }
 

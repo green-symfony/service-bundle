@@ -5,7 +5,7 @@ namespace GS\Service\Service;
 class ArrayService
 {
     //###> API ###
-	
+
     public static function getKeyValueString(
         array $keyValue,
         string $separator = ', ',

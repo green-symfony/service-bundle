@@ -1,0 +1,3 @@
+gs_service:
+    service:
+        current_ip: 'Current ip'

@@ -8,8 +8,8 @@ use function Symfony\Component\String\{
 };
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -20,13 +20,13 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -39,10 +39,18 @@ use GS\Service\Service\{
     StringService,
     DumpInfoService
 };
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FilesystemService
 {
-    public const MAX_FILENAME_LEN = 150;
+	//###> YOU CAN OVERRIDE IT ###
+    public const TMP_FILENAME_PREFIX = '';
+	/*
+		Watch out when changing it
+		This lenght depends on OS System
+	*/
+    public const MAX_TMP_FILENAME_LEN = 150;
+	//###< YOU CAN OVERRIDE IT ###
 
     protected OptionsResolver $demandsOptionsResolver;
     protected readonly array $demandsKeys;
@@ -51,43 +59,53 @@ class FilesystemService
     public function __construct(
         protected readonly DumpInfoService $dumpInfoService,
         protected readonly StringService $stringService,
-		#[Autowire(value: 'gs_service.local_drive_for_test')]
+        protected readonly SluggerInterface $slugger,
         protected readonly string $localDriveForTest,
         protected readonly string $appEnv,
         protected $carbonFactory,
-        protected $slugger,
     ) {
         $this->filesystem = new Filesystem();
 
+		//###> DEMANDS ###
         $demands = [
             'exists',
             'isAbsolutePath',
             'isDir',
             'isFile',
         ];
+		//###< DEMANDS ###
         $this->demandsKeys = \array_combine($demands, $demands);
 
         $this->demandsOptionsResolver = new OptionsResolver();
         $this->configureOptions();
     }
-	
+
 
     //###> API ###
-	
+
+	/*
+		Throws an exception if the paths haven't passed checks of DEMANDS section
+	*/
     public function throwIfNot(
         array $demands,
-        ?string ...$absPaths,
+        ?string ...$paths,
     ): void {
-        $this->ifNot(true, $demands, ...$absPaths);
+        $this->ifNot(true, $demands, ...$paths);
     }
 
+	/*
+		Gets errors if the paths haven't passed checks of DEMANDS section
+	*/
     public function getErrorsIfNot(
         array $demands,
-        ?string ...$absPaths,
+        ?string ...$paths,
     ): array {
-        return $this->ifNot(false, $demands, ...$absPaths);
+        return $this->ifNot(false, $demands, ...$paths);
     }
 
+	/*
+		You have to make a file by path $to in your $callback
+	*/
     public function executeWithoutChangeMTime(
         \Closure|\callable $callback,
         string $from,
@@ -96,12 +114,6 @@ class FilesystemService
         bool $move,
         bool $isMakeIt = false,
     ) {
-        /*
-        \dd(
-            $from,
-            $to,
-        );
-        */
         return $this->make(
             $callback,
             $from,
@@ -113,6 +125,7 @@ class FilesystemService
         );
     }
 
+	/**/
     public function copyWithoutChangeMTime(
         string $from,
         string $to,
@@ -131,6 +144,7 @@ class FilesystemService
         );
     }
 
+	/**/
     public function copyWithChangeMTime(
         string $from,
         string $to,
@@ -149,7 +163,9 @@ class FilesystemService
         );
     }
 
-    // TODO: it works, but redo
+    /*
+        Gets ROOT DRIVE where this project situates
+    */
     public function getLocalRoot(): string
     {
         if ($this->appEnv === 'test') {
@@ -160,12 +176,14 @@ class FilesystemService
         return (string) u(\explode($NDS, Path::normalize(__DIR__))[0])->ensureEnd($NDS);
     }
 
+	/**/
     public function exists(
         string $path,
     ): bool {
         return $this->filesystem->exists($path);
     }
 
+	/**/
     public function assignCMTime(
         string $sourceCATimeAbsPath,
         string $toAbsPath,
@@ -183,32 +201,17 @@ class FilesystemService
         $splFileInfoSource      = new \SplFileInfo($sourceCATimeAbsPath);
         $modifiedTimestamp      = $splFileInfoSource->getMTime();
 
-        /*
-        $timePattern            = 'd-m-Y H:i:s';
-        $createdTime            = $this->carbonFactory->make(Carbon::createFromTimestamp($splFileInfoSource->getCTime()))->format($timePattern);
-        $modifiedTime           = $this->carbonFactory->make(Carbon::createFromTimestamp($modifiedTimestamp))->format($timePattern);
-        $command                = Path::normalize($this->appPathToCreateDateTimeSetter);
-
-        // modified and created
-        $assignCMTimeCommand    = '"'.$command.'"'
-            . ' ' . 'setfiletime'
-            // path
-            . ' ' . '"' . $toAbsPath . '"'
-            //created
-            . ' ' . '"' . $createdTime . '"'
-            //modified
-            . ' ' . '"' . $modifiedTime . '"'
-        ;
-        \system($assignCMTimeCommand);
-        */
-
         // modified
         $this->filesystem->touch($toAbsPath, $modifiedTimestamp);
     }
 
+	/**/
     public function getSmallestDrive(): string
     {
-        $drives         = \explode(' ', ((string) u(\shell_exec('fsutil fsinfo drives'))->collapseWhitespace()));
+        $drives         = \explode(
+			' ',
+			((string) u(\shell_exec('fsutil fsinfo drives'))->collapseWhitespace()),
+		);
         $smallestDrive  = null;
 
         foreach ($drives as $drive) {
@@ -220,7 +223,7 @@ class FilesystemService
             );
             if (empty($errors)) {
                 if ($smallestDrive === null) {
-                    $smallestDrive     = $drive;
+                    $smallestDrive = $drive;
                 }
                 if (\disk_total_space($drive) < \disk_total_space($smallestDrive)) {
                     $smallestDrive = $drive;
@@ -231,20 +234,24 @@ class FilesystemService
         return Path::normalize($smallestDrive);
     }
 
+	/*
+		Makes directories recursively
+	*/
     public function mkdir(
-		string|iterable $dirs,
-		int $mode = 0777,
-	): void {
-		$this->filesystem->mkdir($dirs, $mode);
+        string|iterable $dirs,
+        int $mode = 0777,
+    ): void {
+        $this->filesystem->mkdir($dirs, $mode);
     }
 
+	/**/
     public function getDesktopPath(): string
     {
         $desktopPath = $this->stringService->getPath(
-			\getenv("HOMEDRIVE"),
-			\getenv("HOMEPATH"),
-			"Desktop",
-		);
+            \getenv("HOMEDRIVE"),
+            \getenv("HOMEPATH"),
+            "Desktop",
+        );
 
         $this->throwIfNot(
             [
@@ -258,6 +265,9 @@ class FilesystemService
         return $desktopPath;
     }
 
+	/*
+		Is first file newer?
+	*/
     public function firstFileNewer(
         \SplFileInfo|string $first,
         \SplFileInfo|string $second,
@@ -298,11 +308,14 @@ class FilesystemService
         return $carbonFirst > $carbonSecond;
     }
 
+	/*
+		Creates file into temporary OS directory
+	*/
     public function tempnam(
         ?string $path = null,
         string $ext = 'txt',
     ): string {
-        $fileExists     = empty($this->getErrorsIfNot(
+        $fileExists = empty($this->getErrorsIfNot(
             [
                 'exists',
                 'isFile',
@@ -317,19 +330,35 @@ class FilesystemService
 
         return $this->filesystem->tempnam(
             Path::normalize(\sys_get_temp_dir()),
-            \substr($this->slugger->slug('PPI' . Uuid::v1()), 0, self::MAX_FILENAME_LEN),
+            \substr(
+				$this->slugger->slug(
+					static::TMP_FILENAME_PREFIX . Uuid::v1()
+				),
+				0,
+				static::MAX_TMP_FILENAME_LEN,
+			),
             $ext,
         );
     }
 
-    public function addLine(string $absPath, $content): void
-    {
-        $exists     = $this->isAbsPathExists($absPath);
+	/*
+		Appends the content into the file
+		DOESN'T PUT ANY \PHP_EOL, you should do it on your onw
+	*/
+    public function appendToFile(
+		string $absPath,
+		$content,
+	): void {
+        $exists = $this->isAbsPathExists($absPath);
         if ($exists) {
-            $this->filesystem->appendToFile($absPath, $content, true);
+            $this->filesystem->appendToFile($absPath, $content, true/* LOCK */);
         }
     }
 
+	/*
+		It's a RECURSIVELY method.
+		Removes file or directories.
+	*/
     public function deleteByAbsPathIfExists(
         string $absPath,
     ): void {
@@ -341,10 +370,10 @@ class FilesystemService
     }
 
     //###< API ###
-	
+
 
     //###> HELPER ###
-	
+
     private function getCarbonByFile(
         \SplFileInfo|string $file,
     ): Carbon {
@@ -448,7 +477,7 @@ class FilesystemService
             } catch (\Exception $e) {
                 return $madeResults;
             }
-			
+
             $this->detectMakeTypeAndExecute(
                 $type,
                 $from,
@@ -457,9 +486,9 @@ class FilesystemService
             );
 
             // tmp -> realTo
-			$this->mkdir(
-				$this->stringService->getDirectory($to),
-			);
+            $this->mkdir(
+                $this->stringService->getDirectory($to),
+            );
 
             // before rename need to remove $to
             if (\is_file($to)) {
