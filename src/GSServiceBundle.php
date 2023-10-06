@@ -19,11 +19,11 @@ use GS\Service\Service\{
 
 class GSServiceBundle extends Bundle
 {
-	public function __construct(
-		//private readonly BoolService $boolService,
-	) {
-	}
-	
+    public function __construct(
+        //private readonly BoolService $boolService,
+    ) {
+    }
+
     public function getPath(): string
     {
         return \dirname(__DIR__);
@@ -38,8 +38,8 @@ class GSServiceBundle extends Bundle
     {
         if ($this->extension === null) {
             $this->extension = new GSServiceExtension(
-				//boolService:		$this->boolService,
-			);
+                //boolService:      $this->boolService,
+            );
         }
 
         return $this->extension;

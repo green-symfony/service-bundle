@@ -8,8 +8,8 @@ use function Symfony\Component\String\{
 };
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -20,14 +20,14 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	File\File,
-	Session\Session
+    Request,
+    RequestStack,
+    File\File,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -261,8 +261,10 @@ class StringService
         string $pathname,
         ?string $ext,
     ): string {
-		if (\is_null($ext)) return $pathname;
-		
+        if (\is_null($ext)) {
+            return $pathname;
+        }
+
         return ''
             . $this->getPathnameWithoutExt(\basename($pathname))
             . ((string) u(\mb_strtolower($ext))->ensureStart('.'))
@@ -284,19 +286,19 @@ class StringService
     }
 
     /* WARNING: use this instad of Path::makeAbsolute()
-		
-		dir1/dir2 + //ipV4 => (save // in the beginning)//ip4/dir1/dir2
-		dir1/dir2 + C:/ => C:/dir1/dir2
-	*/
+
+        dir1/dir2 + //ipV4 => (save // in the beginning)//ip4/dir1/dir2
+        dir1/dir2 + C:/ => C:/dir1/dir2
+    */
     public function makeAbsolute(
         string $path,
         string $basePath,
     ): string {
-		if (Path::isAbsolute($path)) {
-			$absPath = $path;
-		} else {
-			$absPath = Path::makeAbsolute($path, $basePath);
-		}			
+        if (Path::isAbsolute($path)) {
+            $absPath = $path;
+        } else {
+            $absPath = Path::makeAbsolute($path, $basePath);
+        }
 
         //###> CONSIDER NETWORK PATHS
         if ($this->isNetworkPath($absPath)) {
@@ -309,12 +311,12 @@ class StringService
     }
 
     /* WARNING: use this instad of Path::getDirectory()
-		
-		//ipV4 => //ipV4
-		//ipV4/dir1/dir2 => //ipV4/dir1
-		C:/ => C:/
-		C:/dir1/dir2 => C:/dir1
-	*/
+
+        //ipV4 => //ipV4
+        //ipV4/dir1/dir2 => //ipV4/dir1
+        C:/ => C:/
+        C:/dir1/dir2 => C:/dir1
+    */
     public function getDirectory(
         string $path,
     ): string {
@@ -330,12 +332,12 @@ class StringService
     }
 
     /* WARNING: use this instad of Path::getRoot()
-		
-		//ipV4/ => //ipV4 (instead of just /)
-		//ipV4/dir1/dir2 => //ipV4
-		C: => C:/
-		C:/dir1/dir2 => C:/
-	*/
+
+        //ipV4/ => //ipV4 (instead of just /)
+        //ipV4/dir1/dir2 => //ipV4
+        C: => C:/
+        C:/dir1/dir2 => C:/
+    */
     public function getRoot(
         string $path,
     ): string {
@@ -364,97 +366,110 @@ class StringService
         }
         return Path::normalize(Path::getRoot($path));
     }
-	
-	public function getEmoji(): string {
-		[$max, $min] = [
-			self::EMOJI_START_RANGE,
-			self::EMOJI_END_RANGE,
-		];
-		if ($min > $max) [$max, $min] = [$min, $max];
-		return \IntlChar::chr(\random_int($min, $max));
-	}
-	
-	/*
-		Can return NOT EXISTING $ext
-			IF $onlyExistingPath == false
-		
-		Always prefers EXISTING $path $ext
-	*/
-	public function getExtFromPath(
-		string $path,
-		bool $onlyExistingPath,
-		bool $withDotAtTheBeginning = true,
-		?array $amongExtensions = null,
-	): ?string {
-		$ext = null;
-		
-		//###> $substrExt for trying to get a $resultExt
-		$substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
-		if ($substrExt == $path) $substrExt = null;
-		//###<
-		
-		//###> $resultExt
-		$resultExt = null;
-		$amongExtensions ??= [];
-		if (!empty($amongExtensions) && $substrExt !== null) {
-			\array_unshift($amongExtensions, $substrExt);
-		}
-		foreach($amongExtensions as $k => $cycleEmongExt) {
-			$cycleEmongExt = (string) $cycleEmongExt;
-			$file = $this->makeAbsolute(
-				(string) u($this->getFilenameWithExt($path, $cycleEmongExt)),
-				$this->getDirectory($path),
-			);
-			
-			if (\is_file($file)) {
-				$resultExt = $cycleEmongExt;
-				unset($cycleEmongExt);
-				break;
-			}
-		}
-		//###<
-		
-		//###> PREFERENCES /* != */
-		if (!$onlyExistingPath && $substrExt != null) $ext = $substrExt;
-		if ($resultExt != null) $ext = $resultExt;
-		//###< PREFERENCES (MORE IMPORTANT)
-		
-		
-		//###> DOT
-		if ($ext !== null) {
-			if ($withDotAtTheBeginning) {
-				if (!\is_null($ext)) $ext = (string) u($ext)->ensureStart('.');
-			} else {
-				$ext = \ltrim($ext, '.');
-			}			
-		}
-		//###< DOT
-		
-		return $ext;
-	}
-	
-	/*
-		returns null when $string doesn't contain the pattern
-	*/
+
+    public function getEmoji(): string
+    {
+        [$max, $min] = [
+            self::EMOJI_START_RANGE,
+            self::EMOJI_END_RANGE,
+        ];
+        if ($min > $max) {
+            [$max, $min] = [$min, $max];
+        }
+        return \IntlChar::chr(\random_int($min, $max));
+    }
+
+    /*
+        Can return NOT EXISTING $ext
+            IF $onlyExistingPath == false
+
+        Always prefers EXISTING $path $ext
+    */
+    public function getExtFromPath(
+        string $path,
+        bool $onlyExistingPath,
+        bool $withDotAtTheBeginning = true,
+        ?array $amongExtensions = null,
+    ): ?string {
+        $ext = null;
+
+        //###> $substrExt for trying to get a $resultExt
+        $substrExt = \preg_replace('~^.*([.].+)$~', '$1', $path);
+        if ($substrExt == $path) {
+            $substrExt = null;
+        }
+        //###<
+
+        //###> $resultExt
+        $resultExt = null;
+        $amongExtensions ??= [];
+        if (!empty($amongExtensions) && $substrExt !== null) {
+            \array_unshift($amongExtensions, $substrExt);
+        }
+        foreach ($amongExtensions as $k => $cycleEmongExt) {
+            $cycleEmongExt = (string) $cycleEmongExt;
+            $file = $this->makeAbsolute(
+                (string) u($this->getFilenameWithExt($path, $cycleEmongExt)),
+                $this->getDirectory($path),
+            );
+
+            if (\is_file($file)) {
+                $resultExt = $cycleEmongExt;
+                unset($cycleEmongExt);
+                break;
+            }
+        }
+        //###<
+
+        //###> PREFERENCES /* != */
+        if (!$onlyExistingPath && $substrExt != null) {
+            $ext = $substrExt;
+        }
+        if ($resultExt != null) {
+            $ext = $resultExt;
+        }
+        //###< PREFERENCES (MORE IMPORTANT)
+
+
+        //###> DOT
+        if ($ext !== null) {
+            if ($withDotAtTheBeginning) {
+                if (!\is_null($ext)) {
+                    $ext = (string) u($ext)->ensureStart('.');
+                }
+            } else {
+                $ext = \ltrim($ext, '.');
+            }
+        }
+        //###< DOT
+
+        return $ext;
+    }
+
+    /*
+        returns null when $string doesn't contain the pattern
+    */
     public function getFromCallbackIfStringLikeRegex(
-		string $string,
-		array|string $regexs,
-		callable|\Closure $callback,
-	): mixed {
-		if (\is_string($regexs)) $regexs = [$regexs];
-		
-		foreach($regexs as $regex) {
-			if (\preg_match($regex, $string) === 1) {
-				return $callback(
-					$regex,
-				);
-			}
-		}
-		return null;
-	}
+        string $string,
+        array|string $regexs,
+        callable|\Closure $callback,
+    ): mixed {
+        if (\is_string($regexs)) {
+            $regexs = [$regexs];
+        }
+
+        foreach ($regexs as $regex) {
+            if (\preg_match($regex, $string) === 1) {
+                return $callback(
+                    $regex,
+                );
+            }
+        }
+        return null;
+    }
 
     //###< API ###
-	
+
 
     //###> HELPER ###
 

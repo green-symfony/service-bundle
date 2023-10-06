@@ -14,7 +14,7 @@ class ServiceContainer
     public function __construct()
     {
     }
-	
+
     //###> API ###
 
     public static function setParametersNoForce(
@@ -28,9 +28,9 @@ class ServiceContainer
         foreach ($keys as $key) {
             if (!$containerBuilder->hasParameter($key)) {
                 $containerBuilder->setParameter(
-					self::getParameterName($parameterPrefix, $key),
-					$callbackGetValue($key),
-				);
+                    self::getParameterName($parameterPrefix, $key),
+                    $callbackGetValue($key),
+                );
             }
         }
     }
@@ -53,23 +53,23 @@ class ServiceContainer
     ): void {
         foreach ($keys as $key) {
             $containerBuilder->setParameter(
-				self::getParameterName($parameterPrefix, $key),
-				$callbackGetValue($key)
-			);
+                self::getParameterName($parameterPrefix, $key),
+                $callbackGetValue($key)
+            );
         }
     }
 
-	/*
-		prefix.key1.key2	-> prefix.key1.key2
-		prefix[key1][key2]	-> prefix.key1.key2
-	*/
+    /*
+        prefix.key1.key2    -> prefix.key1.key2
+        prefix[key1][key2]  -> prefix.key1.key2
+    */
     public static function getParameterName(
-		string|int|float|null $prefix,
-		string|int|float $key,
-	): string {
-		return self::getNormalizedPrefix($prefix) . self::getNormalizedKey($key);
-	}
-	
+        string|int|float|null $prefix,
+        string|int|float $key,
+    ): string {
+        return self::getNormalizedPrefix($prefix) . self::getNormalizedKey($key);
+    }
+
     public static function removeDefinitions(
         ContainerBuilder $containerBuilder,
         array $ids,
@@ -80,27 +80,31 @@ class ServiceContainer
             }
         }
     }
-	
-    //###< API ###
-	
-	// ###> HELPER ###
-	
-	private static function getNormalizedPrefix(int|float|string|null $prefix): string {
-		
-		$prefix ??= '';
-		if ($prefix != '') $prefix = (string) u($prefix)->ensureEnd('.');
-		
-		return $prefix;
-	}
-	
-	private static function getNormalizedKey(int|float|string $key): string {
-		
-		$key		= \strtr((string) $key, [
-			'][' => '.',
-		]);
-		
-		return \trim($key, '[]');
-	}
 
-	// ###< HELPER ###
+    //###< API ###
+
+    // ###> HELPER ###
+
+    private static function getNormalizedPrefix(int|float|string|null $prefix): string
+    {
+
+        $prefix ??= '';
+        if ($prefix != '') {
+            $prefix = (string) u($prefix)->ensureEnd('.');
+        }
+
+        return $prefix;
+    }
+
+    private static function getNormalizedKey(int|float|string $key): string
+    {
+
+        $key        = \strtr((string) $key, [
+            '][' => '.',
+        ]);
+
+        return \trim($key, '[]');
+    }
+
+    // ###< HELPER ###
 }

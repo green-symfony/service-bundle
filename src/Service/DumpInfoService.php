@@ -3,13 +3,13 @@
 namespace GS\Service\Service;
 
 use Symfony\Component\Finder\{
-	Finder
+    Finder
 };
 use GS\Service\Service\{
     StringService
 };
 use GS\Command\Command\{
-	AbstractCommand
+    AbstractCommand
 };
 
 class DumpInfoService
@@ -32,7 +32,7 @@ class DumpInfoService
         ]);
     }
 
-	/* Dumps paths */
+    /* Dumps paths */
     public function dumpInfo(
         AbstractCommand $command,
         string|array $from,
@@ -226,8 +226,8 @@ class DumpInfoService
     ): void {
         foreach ($finder as $file) {
             $command->getIo()->info(
-				$file->getRealPath(),
-			);
+                $file->getRealPath(),
+            );
         }
         \dd('END');
     }

@@ -11,13 +11,13 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -39,8 +39,10 @@ class ClipService
 
     public function copy(int|float|string|null $contents): void
     {
-		if ($contents === null) return;
-		
+        if ($contents === null) {
+            return;
+        }
+
         $this->contents = \trim((string) $contents);
 
         if (\preg_match('~windows~i', $this->os)) {

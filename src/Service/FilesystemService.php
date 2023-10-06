@@ -8,8 +8,8 @@ use function Symfony\Component\String\{
 };
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -20,13 +20,13 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -51,7 +51,7 @@ class FilesystemService
     public function __construct(
         protected readonly DumpInfoService $dumpInfoService,
         protected readonly StringService $stringService,
-		#[Autowire(value: 'gs_service.local_drive_for_test')]
+        #[Autowire(value: 'gs_service.local_drive_for_test')]
         protected readonly string $localDriveForTest,
         protected readonly string $appEnv,
         protected $carbonFactory,
@@ -70,10 +70,10 @@ class FilesystemService
         $this->demandsOptionsResolver = new OptionsResolver();
         $this->configureOptions();
     }
-	
+
 
     //###> API ###
-	
+
     public function throwIfNot(
         array $demands,
         ?string ...$absPaths,
@@ -149,9 +149,9 @@ class FilesystemService
         );
     }
 
-	/*
-		Gets ROOT DRIVE where this project situates
-	*/
+    /*
+        Gets ROOT DRIVE where this project situates
+    */
     public function getLocalRoot(): string
     {
         if ($this->appEnv === 'test') {
@@ -234,19 +234,19 @@ class FilesystemService
     }
 
     public function mkdir(
-		string|iterable $dirs,
-		int $mode = 0777,
-	): void {
-		$this->filesystem->mkdir($dirs, $mode);
+        string|iterable $dirs,
+        int $mode = 0777,
+    ): void {
+        $this->filesystem->mkdir($dirs, $mode);
     }
 
     public function getDesktopPath(): string
     {
         $desktopPath = $this->stringService->getPath(
-			\getenv("HOMEDRIVE"),
-			\getenv("HOMEPATH"),
-			"Desktop",
-		);
+            \getenv("HOMEDRIVE"),
+            \getenv("HOMEPATH"),
+            "Desktop",
+        );
 
         $this->throwIfNot(
             [
@@ -343,10 +343,10 @@ class FilesystemService
     }
 
     //###< API ###
-	
+
 
     //###> HELPER ###
-	
+
     private function getCarbonByFile(
         \SplFileInfo|string $file,
     ): Carbon {
@@ -450,7 +450,7 @@ class FilesystemService
             } catch (\Exception $e) {
                 return $madeResults;
             }
-			
+
             $this->detectMakeTypeAndExecute(
                 $type,
                 $from,
@@ -459,9 +459,9 @@ class FilesystemService
             );
 
             // tmp -> realTo
-			$this->mkdir(
-				$this->stringService->getDirectory($to),
-			);
+            $this->mkdir(
+                $this->stringService->getDirectory($to),
+            );
 
             // before rename need to remove $to
             if (\is_file($to)) {

@@ -8,8 +8,8 @@ use function Symfony\Component\String\{
 };
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -20,13 +20,13 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -43,9 +43,9 @@ class BoolService
 
     //###> API ###
 
-	/*
-		Returns null if the key doesn't exist
-	*/
+    /*
+        Returns null if the key doesn't exist
+    */
     public function isGet(
         array $array,
         string $key,
@@ -55,10 +55,11 @@ class BoolService
             : null
         ;
     }
-	
-	public function isCurrentConsolePathStartsWithSlash(): bool {
-		return \str_starts_with(Path::normalize(\getcwd()), '/');
-	}
+
+    public function isCurrentConsolePathStartsWithSlash(): bool
+    {
+        return \str_starts_with(Path::normalize(\getcwd()), '/');
+    }
 
     //###< API ###
 

@@ -3,8 +3,8 @@
 namespace GS\Service\Service;
 
 use Symfony\Component\Finder\{
-	SplFileInfo,
-	Finder
+    SplFileInfo,
+    Finder
 };
 use Symfony\Component\Filesystem\{
     Path,
@@ -15,13 +15,13 @@ use Symfony\Component\OptionsResolver\{
     OptionsResolver
 };
 use Symfony\Component\Yaml\{
-	Tag\TaggedValue,
-	Yaml
+    Tag\TaggedValue,
+    Yaml
 };
 use Symfony\Component\HttpFoundation\{
-	Request,
-	RequestStack,
-	Session\Session
+    Request,
+    RequestStack,
+    Session\Session
 };
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -54,32 +54,32 @@ class RegexService
     {
         return '~^(?<boardNumber>[0-9]{4})[_](?<day>[0-9]{2})(?<month>[0-9]{2})(?<fullYear>[0-9]{4})[_][0-9]{3,}' . $this->sdkExtRegex . '$~i';
     }
-	
-	public function getEscapedForRegex(
-		string $string,
-	): string {
-		$string = \strtr(
-			$string,
-			[
-				'|'		=> '[|]',
-				'+'		=> '[+]',
-				'*'		=> '[*]',
-				'?'		=> '[?]',
-				'['		=> '[[]',
-				']'		=> '[]]',
-				'\\'	=> '(?:\\\\|\/)',
-				'/'		=> '(?:\\|\/)',
-				'.'		=> '[.]',
-				'-'		=> '[-]',
-				')'		=> '[)]',
-				'('		=> '[(]',
-				'{'		=> '[{]',
-				'}'		=> '[}]',
-			]
-		);
 
-		return $string;
-	}
+    public function getEscapedForRegex(
+        string $string,
+    ): string {
+        $string = \strtr(
+            $string,
+            [
+                '|'     => '[|]',
+                '+'     => '[+]',
+                '*'     => '[*]',
+                '?'     => '[?]',
+                '['     => '[[]',
+                ']'     => '[]]',
+                '\\'    => '(?:\\\\|\/)',
+                '/'     => '(?:\\|\/)',
+                '.'     => '[.]',
+                '-'     => '[-]',
+                ')'     => '[)]',
+                '('     => '[(]',
+                '{'     => '[{]',
+                '}'     => '[}]',
+            ]
+        );
+
+        return $string;
+    }
 
     //###< API ###
 

@@ -7,7 +7,7 @@ class BufferService
     public function __construct()
     {
     }
-	
+
     //###> API ###
 
     /**
