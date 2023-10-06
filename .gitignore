@@ -1,8 +1,5 @@
 ###> APP ###
 
-###> bundles ###
-/bundles/
-
 ###> source files ###
 *.rar
 *.zip
