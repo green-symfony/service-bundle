@@ -111,7 +111,7 @@ class StringService
 			if (\is_string($names)) $names = [$names];
             
 			$names = \array_map(
-				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
+				fn($partOfPath) => '~.*' . $this->regexService->getEscapedStrings($partOfPath) . '.*~',
 				$names,
 			);
 			
