@@ -53,6 +53,8 @@ Open your console into your main project directory and execute:
 composer require "green-symfony/service-bundle"
 ```
 
+[Binds](https://github.com/green-symfony/docs/blob/main/docs/borrow-services.yaml-section.md)
+
 ### Step 3: Usage
 
 **Symfony Autowiring**
