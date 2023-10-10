@@ -1,1 +1,1 @@
-# service-bundle
+# green-symfony/service-bundle
