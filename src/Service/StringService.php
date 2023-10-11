@@ -166,6 +166,13 @@ class StringService
 		); // "/root/dir1/dir2/dir3/dir4/filename.ext"
 		
 		$path = $this->stringService->getPath(
+			'//root/dir1/dir2',
+			'//dir3',
+			'/dir4/',
+			'filename.ext/',
+		); // "//root/dir1/dir2/dir3/dir4/filename.ext"
+		
+		$path = $this->stringService->getPath(
 			'root/dir1/dir2',
 			'/dir3',
 			'/dir4//',
@@ -177,30 +184,41 @@ class StringService
     ): string {
         $NDS = Path::normalize(\DIRECTORY_SEPARATOR);
 
-		//###> isStartWithSlash ###
+		//###> start slashes ###
 		$zeroEl = null;
 		$idx = 0;
 		if (isset(\array_values($parts)[$idx])) {
 			$zeroEl = \array_values($parts)[$idx];
 		}
 		
-		$isStartWithSlash = false;
+		//!
+		$startSlashes = '';
 		if (!\is_null($zeroEl)) {
-			$isStartWithSlash = \str_starts_with($zeroEl, $NDS) || \str_starts_with($zeroEl, '\\');
+			// saves start slashes, for abs path and network ip
+			$startSlashes = \preg_replace(
+				'~^([\\\/]+).*$~',
+				'$1',
+				$zeroEl,
+			);
+			
+			$startSlashesWereNotFound = $startSlashes == $zeroEl;
+			if ($startSlashesWereNotFound) {
+				//!
+				$startSlashes = '';
+			}
 		}
-		//###< isStartWithSlash ###
-
+		//###< start slashes ###
+		
         \array_walk(
 			$parts,
 			static fn(&$path) => $path = \trim($path, " \n\r\t\v\x00/\\"),
 		);
 
-        $resultPath = Path::normalize(\implode($NDS, $parts));
+        $resultPath = \implode($NDS, $parts);
+		$resultPath = Path::normalize(
+			(string) u($resultPath)->ensureStart($startSlashes),
+		);
 		
-		if ($isStartWithSlash) {
-			$resultPath = (string) u($resultPath)->ensureStart($NDS);
-		}
-
         return $resultPath;
     }
 
