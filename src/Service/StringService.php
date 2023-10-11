@@ -41,10 +41,11 @@ use GS\Service\Service\{
 
 class StringService
 {
+	//###> YOU CAN OVERRIDE IT ###
     public const DOP_WIDTH_FOR_STR_PAD = 10;
-
-    public const EMOJI_START_RANGE      = 0x1F400;
-    public const EMOJI_END_RANGE        = 0x1F440;
+    public const EMOJI_START_RANGE = 0x1F400;
+    public const EMOJI_END_RANGE = 0x1F440;
+	//###< YOU CAN OVERRIDE IT ###
 
     public function __construct(
         protected readonly ArrayService $arrayService,
@@ -66,23 +67,57 @@ class StringService
 
     //###> API ###
 
+	/*
+		Do strings contain the same text?
+		
+		The empty $string doesn't contain into any not empty string!
+	*/
     public function strContains(
         string $haystack,
         string $needle,
     ): bool {
-        $haystack       = Path::normalize(\mb_strtolower(\str_replace(' ', '', $haystack)));
-        $needle         = Path::normalize(\mb_strtolower(\str_replace(' ', '', $needle)));
+		$clear = static fn($string): string
+			=> Path::normalize(
+				\mb_strtolower(
+					\str_replace(
+						' ',
+						'',
+						\trim(
+							(string) $string,
+						)
+					)
+				)
+			);
+		
+        $haystack = $clear($haystack);
+        $needle = $clear($needle);
+		
+		if ($haystack == '' && $needle != '') return false;
+		if ($needle == '' && $haystack != '') return false;
 
-        //\dd($haystack, $needle);
         return (\str_contains($haystack, $needle) || \str_contains($needle, $haystack));
     }
 
-    public function finderPathButNotNames(
+	/*
+		Changes the \Symfony\Component\Finder\Finder object state
+		ROOT_PATH/REL_PATH/NAME
+		
+		ROOT_PATH - doesn't consider
+		REL_PATH - must contain names
+		NAME - must not contain names
+	*/
+    public function finderPathMustContainButNotIntoName(
         Finder $finder,
-        array $names,
+        string|array $names,
     ) {
         if (!empty($names)) {
-            $names = \array_map(fn($partOfPath) => '~.*' . $this->getEscapedSpecialCharacters($partOfPath) . '.*~', $names);
+			if (\is_string($names)) $names = [$names];
+            
+			$names = \array_map(
+				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
+				$names,
+			);
+			
             $finder
                 ->path($names)
                 ->notName($names)
@@ -91,15 +126,27 @@ class StringService
     }
 
     /**
-        For \str_pad consider only two-byte text
-
-        \str_pad($lines[0], $this->stringService->getOptimalWidthForStrPad($lines[0], $lines)) . ''
+        For the pad of the \str_pad() function
+		
+		\str_pad() considers only two-byte text.
+	
+		Usage:
+			$lines = [
+				'Text1',
+				'Text2Text2',
+				'Text3Text3Text3',
+			];
+		
+			$partOfTheString = \str_pad(
+				$lines[0],
+				$this->stringService->getOptimalWidthForStrPad($lines[0], $lines)
+			);
     */
     public function getOptimalWidthForStrPad($inputString, array $all): int
     {
         // const part
         $maxLen         = $this->arrayService->getMaxLen($all);
-        $const          = $maxLen + self::DOP_WIDTH_FOR_STR_PAD;
+        $const          = $maxLen + static::DOP_WIDTH_FOR_STR_PAD;
         // dynamic part
         $getCountLettersWithousRussanOnes = static fn($string) => \strlen(\preg_replace('~[а-я]~ui', '', (string) $string));
         $currentLen     = \mb_strlen((string) $inputString) - $getCountLettersWithousRussanOnes($inputString);
@@ -108,49 +155,113 @@ class StringService
         return $currentLen + $const;
     }
 
+	/*
+		Usage:
+		
+		$path = $this->stringService->getPath(
+			'/root/dir1/dir2',
+			'//dir3',
+			'/dir4/',
+			'filename.ext/',
+		); // "/root/dir1/dir2/dir3/dir4/filename.ext"
+		
+		$path = $this->stringService->getPath(
+			'root/dir1/dir2',
+			'/dir3',
+			'/dir4//',
+			'filename.ext/',
+		); // "root/dir1/dir2/dir3/dir4/filename.ext"
+	*/
     public function getPath(
         string ...$parts,
     ): string {
-        $NDS                = Path::normalize(\DIRECTORY_SEPARATOR);
+        $NDS = Path::normalize(\DIRECTORY_SEPARATOR);
 
-        \array_walk($parts, static fn(&$path) => $path = \rtrim(\trim($path), "/\\"));
+		//###> isStartWithSlash ###
+		$zeroEl = null;
+		$idx = 0;
+		if (isset(\array_values($parts)[$idx])) {
+			$zeroEl = \array_values($parts)[$idx];
+		}
+		
+		$isStartWithSlash = false;
+		if (!\is_null($zeroEl)) {
+			$isStartWithSlash = \str_starts_with($zeroEl, $NDS) || \str_starts_with($zeroEl, '\\');
+		}
+		//###< isStartWithSlash ###
 
-        $resultPath      = Path::normalize(\implode($NDS, $parts));
+        \array_walk(
+			$parts,
+			static fn(&$path) => $path = \trim($path, " \n\r\t\v\x00/\\"),
+		);
+
+        $resultPath = Path::normalize(\implode($NDS, $parts));
+		
+		if ($isStartWithSlash) {
+			$resultPath = (string) u($resultPath)->ensureStart($NDS);
+		}
 
         return $resultPath;
     }
 
-    public function getPathnameWithoutExt(string $path): string
-    {
-        return \preg_replace('~[.][a-zа-я]+$~iu', '', $path);
+	/*
+		Gets pathname without extension
+	*/
+    public function getPathnameWithoutExt(
+		string $path,
+	): string {
+        return \preg_replace('~[.].+$~iu', '', $path);
     }
 
+	/*
+		Usage:
+		
+		$string = $this->stringService->replaceSlashWithSystemDirectorySeparator(
+			'/root/dir1\\dir2.//',
+		); // "\root\dir1\dir2.\\"
+	*/
     public function replaceSlashWithSystemDirectorySeparator(
         string|array $path,
     ): string|array {
-        $output = null;
-
         if (\is_array($path)) {
-            \array_walk($path, fn(&$el) => $el = $this->stringreplaceSlashWithSystemDirectorySeparator($el));
-            $output = $path;
-        } elseif (\is_string($path)) {
-            $output = $this->stringreplaceSlashWithSystemDirectorySeparator($path);
+            \array_walk(
+				$path,
+				fn(&$el)
+					=> $el = $this->getStringWithReplacedSlashesWithSystemDirectorySeparator($el),
+			);
+        } else {
+            $path = $this->getStringWithReplacedSlashesWithSystemDirectorySeparator($path);
         }
 
-        return $output;
+        return $path;
     }
 
-    public function getEscapedStrings(array $array): array
-    {
-        return \array_map(
-            fn($partOfPath)
-                => '~.*' . $this->getEscapedSpecialCharacters($partOfPath) . '.*~',
-            $array,
-        );
+	/*
+		Gets something transformed into regex able one
+	*/
+    public function getEscapedStrings(
+		string|array $strings,
+	): string|array {
+		
+		if (\is_array($strings)) {
+			\array_walk(
+				$array,
+				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
+			);
+		} else {
+			$strings = $this->getEscapedString($strings);
+		}
+		
+        return $strings;
     }
-
-    public function getEscapedSpecialCharacters(string $string): string
-    {
+	
+	/*
+		EXACTLY string
+		Gets string transformed into regex able one
+	*/
+    private function getEscapedString(
+		string $string,
+	): string {
         $string = \strtr(
             $string,
             [
@@ -174,6 +285,9 @@ class StringService
         return $string;
     }
 
+	/*
+		TODO: 0
+	*/
     public function getYearBySubstr(
         int|string $yearSubstr,
         bool $fullYear = false,
@@ -370,8 +484,8 @@ class StringService
     public function getEmoji(): string
     {
         [$max, $min] = [
-            self::EMOJI_START_RANGE,
-            self::EMOJI_END_RANGE,
+            static::EMOJI_START_RANGE,
+            static::EMOJI_END_RANGE,
         ];
         if ($min > $max) {
             [$max, $min] = [$min, $max];
@@ -500,8 +614,9 @@ class StringService
         return $secontYear;
     }
 
-    private function stringreplaceSlashWithSystemDirectorySeparator(string $path): string
-    {
+    private function getStringWithReplacedSlashesWithSystemDirectorySeparator(
+		string $path,
+	): string {
         return \str_replace(Path::normalize(\DIRECTORY_SEPARATOR), \DIRECTORY_SEPARATOR, $path);
     }
 
