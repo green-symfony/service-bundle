@@ -245,10 +245,12 @@ class StringService
 		
 		if (\is_array($strings)) {
 			\array_walk(
-				$array,
+				$strings,
 				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
 			);
-		} else {
+		}
+		
+		if (\is_string($strings)) {
 			$strings = $this->getEscapedString($strings);
 		}
 		
