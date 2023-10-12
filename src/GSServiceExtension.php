@@ -37,6 +37,11 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     public const LOCAL_DRIVE_FOR_TEST = 'local_drive_for_test';
     public const FAKER_SERVICE_KEY = 'faker';
     public const CARBON_FACTORY_SERVICE_KEY = 'carbon_factory';
+	
+    public const YEAR_REGEX_KEY = 'year_regex';
+    public const YEAR_REGEX_FULL_KEY = 'year_regex_full';
+    public const IP_V_4_REGEX_KEY = 'ip_v4_regex';
+    public const SLASH_OF_IP_REGEX_KEY = 'slash_of_ip_regex';
 
     public function __construct(
         //private readonly BoolService $boolService,
@@ -69,6 +74,18 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             ),
             timezone:   $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
+            ),
+			yearRegex:	$container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
+            ),
+			yearRegexFull:	$container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_FULL_KEY),
+            ),
+			ipV4Regex:	$container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::IP_V_4_REGEX_KEY),
+            ),
+			slashOfIpRegex:	$container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
             ),
         );
     }
@@ -160,6 +177,10 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                 self::LOCAL_DRIVE_FOR_TEST,
                 self::LOCALE,
                 self::TIMEZONE,
+                self::YEAR_REGEX_KEY,
+                self::YEAR_REGEX_FULL_KEY,
+                self::IP_V_4_REGEX_KEY,
+                self::SLASH_OF_IP_REGEX_KEY,
             ],
         );
 

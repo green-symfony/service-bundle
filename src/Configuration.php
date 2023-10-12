@@ -18,6 +18,10 @@ class Configuration implements ConfigurationInterface
     public function __construct(
         private $locale,
         private $timezone,
+        private $yearRegex,
+        private $yearRegexFull,
+        private $ipV4Regex,
+        private $slashOfIpRegex,
     ) {
     }
 
@@ -68,6 +72,26 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                ->end()
+
+                ->scalarNode(GSServiceExtension::YEAR_REGEX_KEY)
+					->info('The regular expression of the year\'s number')
+                    ->defaultValue($this->yearRegex)
+                ->end()
+
+                ->scalarNode(GSServiceExtension::YEAR_REGEX_FULL_KEY)
+					->info('The regular expression of the year\'s full number')
+                    ->defaultValue($this->yearRegexFull)
+                ->end()
+
+                ->scalarNode(GSServiceExtension::IP_V_4_REGEX_KEY)
+					->info('The regular expression of ip v4')
+                    ->defaultValue($this->ipV4Regex)
+                ->end()
+
+                ->scalarNode(GSServiceExtension::SLASH_OF_IP_REGEX_KEY)
+					->info('The regular expression of ip\'s slashes')
+                    ->defaultValue($this->slashOfIpRegex)
                 ->end()
 
             ->end()

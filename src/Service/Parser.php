@@ -6,16 +6,21 @@ class Parser
 {
     //###> API ###
 
-    public static function getFirstNameLastNamePatronymic(string $fullName): array
-    {
+	/*
+		TODO: 0
+	*/
+    public static function getFirstNameLastNamePatronymic(
+		string $fullName,
+	): array {
         $matches = [];
-
+		$fullName = \trim($fullName);
+		
         \preg_match('~^([a-zа-я]*)\s*([a-zа-я]*)\s*([a-zа-я]*)\s*$~iu', $fullName, $matches);
         \array_walk($matches, static fn(&$v) => $v = \trim($v));
 
-        $firstName      = null;
-        $lastName       = null;
-        $patronymic     = null;
+        $firstName = null;
+        $lastName = null;
+        $patronymic = null;
 
         foreach (
             [

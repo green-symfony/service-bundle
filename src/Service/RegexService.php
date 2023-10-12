@@ -31,33 +31,41 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class RegexService
 {
-    public function __construct(
-        protected readonly string $systemFilePattern,
-        protected readonly string $flightReportFileRegex,
-        protected readonly string $sdkExtRegex,
-    ) {
-    }
+    public function __construct() {}
 
     //###> API ###
 
-    public function getNotTmpDocxRegex(): string
-    {
-        return '~^' . $this->systemFilePattern . '.*[.]docx?$~ui';
+	/*
+		Gets something transformed into regex able one
+	*/
+    public function getEscapedStrings(
+		string|array $strings,
+	): string|array {
+		
+		$getEscapedString = $this->getEscapedString(...);
+		
+		if (\is_array($strings)) {
+			\array_walk(
+				$strings,
+				static fn($partOfPath) => '~.*' . $getEscapedString($partOfPath) . '.*~',
+			);
+		}
+		
+		if (\is_string($strings)) {
+			$strings = $getEscapedString($strings);
+		}
+		
+        return $strings;
     }
 
-    public function getFlightReportFileRegex(): string
-    {
-        return '~^' . $this->flightReportFileRegex . '$~ui';
-    }
-
-    public function getSdkFileRegex(): string
-    {
-        return '~^(?<boardNumber>[0-9]{4})[_](?<day>[0-9]{2})(?<month>[0-9]{2})(?<fullYear>[0-9]{4})[_][0-9]{3,}' . $this->sdkExtRegex . '$~i';
-    }
-
-    public function getEscapedForRegex(
-        string $string,
-    ): string {
+    //###< API ###
+	
+	
+	//###> HELPER ###
+	
+    private function getEscapedString(
+		string $string,
+	): string {
         $string = \strtr(
             $string,
             [
@@ -80,10 +88,6 @@ class RegexService
 
         return $string;
     }
-
-    //###< API ###
-
-    //###> HELPER ###
-
-    //###< HELPER ###
+	
+	//###< HELPER ###
 }

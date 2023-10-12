@@ -35,7 +35,9 @@ use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use GS\Service\Service\{
+    ArrayService,
     BoolService,
+    RegexService,
     CarbonService
 };
 
@@ -51,15 +53,9 @@ class StringService
         protected readonly ArrayService $arrayService,
         protected readonly CarbonService $carbonService,
         protected readonly BoolService $boolService,
-        protected readonly array $appPassportBodies,
-        protected readonly array $configMonths,
+        protected readonly RegexService $regexService,
         protected readonly string $yearRegex,
         protected readonly string $yearRegexFull,
-        protected readonly string $ppiConfigBurFilePrefixRegex,
-        protected readonly string $ppiConfigBurFileCountFiguresRegex,
-        protected readonly string $ppiConfigBurExtRegex,
-        protected readonly string $ppiConfigBurCorrectFilePrefix,
-        protected readonly string $ppiConfigBurCorrectExt,
         protected readonly string $ipV4Regex,
         protected readonly string $slashOfIpRegex,
     ) {
@@ -255,71 +251,20 @@ class StringService
     }
 
 	/*
-		Gets something transformed into regex able one
-	*/
-    public function getEscapedStrings(
-		string|array $strings,
-	): string|array {
-		
-		if (\is_array($strings)) {
-			\array_walk(
-				$strings,
-				fn($partOfPath) => '~.*' . $this->getEscapedString($partOfPath) . '.*~',
-			);
-		}
-		
-		if (\is_string($strings)) {
-			$strings = $this->getEscapedString($strings);
-		}
-		
-        return $strings;
-    }
-	
-	/*
-		EXACTLY string
-		Gets string transformed into regex able one
-	*/
-    private function getEscapedString(
-		string $string,
-	): string {
-        $string = \strtr(
-            $string,
-            [
-                '|'     => '[|]',
-                '+'     => '[+]',
-                '*'     => '[*]',
-                '?'     => '[?]',
-                '['     => '[[]',
-                ']'     => '[]]',
-                '\\'    => '(?:\\\\|\/)',
-                '/'     => '(?:\\|\/)',
-                '.'     => '[.]',
-                '-'     => '[-]',
-                ')'     => '[)]',
-                '('     => '[(]',
-                '{'     => '[{]',
-                '}'     => '[}]',
-            ]
-        );
-
-        return $string;
-    }
-
-	/*
-		TODO: 0
+		Gets number of the year by substring
 	*/
     public function getYearBySubstr(
         int|string $yearSubstr,
         bool $fullYear = false,
         bool $throwIfNull = false,
     ): ?string {
-        $year           = null;
-        $matches        = [];
+        $year = null;
+        $matches = [];
 
-        $yearSubstr     = (string) $yearSubstr;
+        $yearSubstr = (string) $yearSubstr;
 
-        $currentYear                        = $this->carbonService->getCurrentYear();
-        $firstTwoFiguresFromCurrentYear     = \substr($currentYear, 0, 2);
+        $currentYear = $this->carbonService->getCurrentYear();
+        $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
         $yearRegex = $this->yearRegex;
 
@@ -348,15 +293,18 @@ class StringService
         return $year;
     }
 
+	/*
+		Gets number of the year which is more similar on current one
+	*/
     public function getMoreSimilarOnCurrentYearBySubstr(
         int|string $yearSubstr,
     ): ?string {
-        $year           = null;
-        $matches        = [];
+        $year = null;
+        $matches = [];
 
-        $yearSubstr     = (string) $yearSubstr;
+        $yearSubstr = (string) $yearSubstr;
 
-        $currentYear                        = $this->carbonService->getCurrentYear();
+        $currentYear = $this->carbonService->getCurrentYear();
         $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
         \preg_match_all(
@@ -369,10 +317,13 @@ class StringService
             $years = $matches['year'];
 
             foreach ($years as $_year) {
-                if (\strlen($_year) == 2) {
+				if (\strlen($_year) == 2) {
                     $_year = (int) ($firstTwoFiguresFromCurrentYear . $_year);
                 }
-                if ($year === null || $this->getNumberThatMoreSimilarCurrentYear($year, $_year)) {
+                if (false
+					|| $year === null
+					|| $year != $this->getNumberThatMoreSimilarCurrentYear($year, $_year)
+				) {
                     $year = $_year;
                 }
             }
@@ -381,16 +332,30 @@ class StringService
         return $year;
     }
 
+	/*
+		Gets the string without the substring
+	*/
     public function removeSubstr(
         string $string,
         string $substr,
+        int $limit = -1,
     ): string {
         if (!\str_contains($string, $substr)) {
             return $string;
         }
-        return \preg_replace('~' . $substr . '~', '', $string);
+		$substr = $this->regexService->getEscapedStrings($substr);
+		
+        return \preg_replace('~' . $substr . '~', '', $string, $limit);
     }
-
+	
+	/*
+		Usage:
+		
+		$filename = $this->stringService->getFilenameWithExt(
+			'/root/rel/filename.ext',
+			'....txt',
+		); // "filename.txt"
+	*/
     public function getFilenameWithExt(
         string $pathname,
         ?string $ext,
@@ -405,21 +370,30 @@ class StringService
         ;
     }
 
+	/*
+		Only for DISK NAME, not for IP
+		
+		returns $rootDrive, but if it's only a letter it ensures end
+	*/
     public function getEnsuredRootDrive(
-        string $rootDrive
+        string $rootDrive,
     ): string {
-        $rootDrive = \trim(\rtrim($rootDrive, '/\\'));
+        $isDrive = static fn($path) => \preg_match('~^[a-zа-я]$~iu', $path) === 1;
 
-        $isRoot = static fn($path) => \preg_match('~^[a-zа-я]$~iu', $path) === 1;
-
-        if (!$isRoot($rootDrive)) {
-            return $rootDrive;
+		$trimmedRootDrive = \trim(
+			\rtrim(
+				$rootDrive,
+				':/\\',
+			)
+		);
+        if (!$isDrive($trimmedRootDrive)) {
+			return $rootDrive;
         }
-
-        return (string) u($rootDrive)->ensureEnd(':/');
+		
+        return (string) u($trimmedRootDrive)->ensureEnd(':/');
     }
 
-    /* WARNING: use this instad of Path::makeAbsolute()
+    /* WARNING: use it instad of Path::makeAbsolute()
 
         dir1/dir2 + //ipV4 => (save // in the beginning)//ip4/dir1/dir2
         dir1/dir2 + C:/ => C:/dir1/dir2
@@ -444,7 +418,7 @@ class StringService
         return Path::normalize($absPath);
     }
 
-    /* WARNING: use this instad of Path::getDirectory()
+    /* WARNING: use it instad of Path::getDirectory()
 
         //ipV4 => //ipV4
         //ipV4/dir1/dir2 => //ipV4/dir1
@@ -465,7 +439,7 @@ class StringService
         return Path::normalize(\dirname($path));
     }
 
-    /* WARNING: use this instad of Path::getRoot()
+    /* WARNING: use it instad of Path::getRoot()
 
         //ipV4/ => //ipV4 (instead of just /)
         //ipV4/dir1/dir2 => //ipV4
@@ -478,7 +452,7 @@ class StringService
         $isNetworkPath = $this->isNetworkPath(
             $path,
         );
-
+		
         if ($isNetworkPath) {
             $ipRoot = null;
             $ipRootName = 'ipRoot';
@@ -501,6 +475,7 @@ class StringService
         return Path::normalize(Path::getRoot($path));
     }
 
+	/**/
     public function getEmoji(): string
     {
         [$max, $min] = [
