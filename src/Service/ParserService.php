@@ -2,12 +2,29 @@
 
 namespace GS\Service\Service;
 
-class Parser
+class ParserService
 {
     //###> API ###
 
 	/*
-		TODO: 0
+		Usage:
+			[
+				$name,			// "Name"
+				$surname,		// "Surname"
+				$patronymic,	// "Patronymic"
+			] = $this->parser->getFirstNameLastNamePatronymic('   Name Surname   Patronymic');
+			
+			[
+				$name,			// "Name"
+				$surname,		// "Surname"
+				$patronymic,	// null
+			] = $this->parser->getFirstNameLastNamePatronymic('Name 				Surname');
+			
+			[
+				$name,			// "Name"
+				$surname,		// null
+				$patronymic,	// null
+			] = $this->parser->getFirstNameLastNamePatronymic(' 		Name		');
 	*/
     public static function getFirstNameLastNamePatronymic(
 		string $fullName,
@@ -22,13 +39,11 @@ class Parser
         $lastName = null;
         $patronymic = null;
 
-        foreach (
-            [
+        foreach ([
             [ &$firstName, 1 ],
             [ &$lastName, 2 ],
             [ &$patronymic, 3 ],
-            ] as [ &$propertyRef, $groupNumber ]
-        ) {
+		] as [ &$propertyRef, $groupNumber ]) {
             if (isset($matches[$groupNumber]) && $matches[$groupNumber] !== '') {
                 $propertyRef = $matches[$groupNumber];
             }

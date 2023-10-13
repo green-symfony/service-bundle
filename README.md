@@ -44,10 +44,41 @@ composer require "green-symfony/service-bundle"
 
 ### Step 3: Usage
 
-With the help of the Symfony Autowiring use these services:
+**Symfony Autowiring**
+
+These services are already available for using:
 
 ```php
+namespace YourNamespace;
+
 use GS\Service\Service\StringService;
+
+class YourClass {
+	public function __construct(
+		private readonly StringService $stringService,
+	) {}
+
+	public function yourMethod() {
+		return $this->stringService->SOME_METHOD();
+	}
+}
+```
+
+**php extending + Symfony Autowiring**
+
+```php
+//###> YOUR FILE #1 ###
+
+namespace App\Service;
+
+use GS\Service\Service\StringService as GSStringService;
+
+class StringService extend GSStringService {}
+
+
+//###> YOUR FILE #2 ###
+
+use App\Service\StringService;
 
 class YourClass {
 	public function __construct(

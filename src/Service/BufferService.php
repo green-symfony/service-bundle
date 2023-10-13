@@ -11,6 +11,7 @@ class BufferService
     //###> API ###
 
     /**
+		Clears all the levels of the output OS buffer
         Works with php output buffer
     */
     public static function clear(): void

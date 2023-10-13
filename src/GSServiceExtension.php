@@ -17,12 +17,21 @@ use Symfony\Component\DependencyInjection\Loader\{
 };
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
-use GS\Service\Service\{
-    ServiceContainer,
-    BoolService,
-    StringNormalizer,
-    ConfigService
-};
+use GS\Service\Service\ServiceContainer;
+use GS\Service\Service\ConfigService;
+
+use GS\Service\Service\ArrayService;
+use GS\Service\Service\BoolService;
+use GS\Service\Service\BufferService;
+use GS\Service\Service\CarbonService;
+use GS\Service\Service\ClipService;
+use GS\Service\Service\DumpInfoService;
+use GS\Service\Service\FilesystemService;
+use GS\Service\Service\HtmlService;
+use GS\Service\Service\ParserService;
+use GS\Service\Service\RandomPasswordService;
+use GS\Service\Service\RegexService;
+use GS\Service\Service\StringService;
 
 class GSServiceExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
@@ -111,17 +120,133 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         $this->registerBundleTagsForAutoconfiguration(
             $container,
         );
+		$this->setDefinitions(
+            $container,
+		);
     }
 
     //###> HELPERS ###
 
+    private function setDefinitions(
+		ContainerBuilder $container,
+	): void {
+		foreach([
+			[
+				ArrayService::class,
+				ArrayService::class,
+			],
+			[
+				BoolService::class,
+				BoolService::class,
+			],
+			[
+				BufferService::class,
+				BufferService::class,
+			],
+			[
+				CarbonService::class,
+				CarbonService::class,
+			],
+			[
+				ClipService::class,
+				ClipService::class,
+			],
+			[
+				DumpInfoService::class,
+				DumpInfoService::class,
+			],
+			[
+				FilesystemService::class,
+				FilesystemService::class,
+			],
+			[
+				HtmlService::class,
+				HtmlService::class,
+			],
+			[
+				ParserService::class,
+				ParserService::class,
+			],
+			[
+				RandomPasswordService::class,
+				RandomPasswordService::class,
+			],
+			[
+				RegexService::class,
+				RegexService::class,
+			],
+			[
+				StringService::class,
+				StringService::class,
+			],
+		] as [ $id, $class ]) {
+			$container
+				->setDefinition(
+					$id,
+					(new Definition($class))
+						->setAutowired(true)
+					,
+				)
+			;			
+		}
+
+		foreach([
+			[
+				StringService::class,
+				[
+					'$yearRegex' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
+					),
+					'$yearRegexFull' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_FULL_KEY),
+					),
+					'$ipV4Regex' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::IP_V_4_REGEX_KEY),
+					),
+					'$slashOfIpRegex' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
+					),
+				],
+			],
+			[
+				FilesystemService::class,
+				[
+					'$localDriveForTest' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
+					),
+					'$appEnv' => $container->getParameter(
+						ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
+					),
+					'$carbonFactory' => $container->getDefinition(
+						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
+					),
+				],
+			],
+			[
+				CarbonService::class,
+				[
+					'$carbonFactory' => $container->getDefinition(
+						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
+					),
+				],
+			],
+		] as [ $id, $args ]) {
+			if ($container->hasDefinition($id)) {
+				$container
+					->getDefinition($id)
+					->setArguments($args)
+				;
+			}
+		}
+	}
+	
     private function carbonService(
         array $config,
         ContainerBuilder $container,
     ): void {
         $carbon = new Definition(
-            class:          \Carbon\FactoryImmutable::class,
-            arguments:      [
+            class: \Carbon\FactoryImmutable::class,
+            arguments: [
                 '$settings'         => [
                     'locale'                    => $this->localeParameter,
                     'strictMode'                => true,

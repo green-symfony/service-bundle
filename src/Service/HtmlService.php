@@ -12,14 +12,16 @@ class HtmlService
     {
     }
 
+
     //###> API ###
 
+	/**/
     public static function getImgHtmlByBinary(
-        string $content,
+        string $binaryImgContent,
     ): string {
         return (string) u('<img
 			class="img-fluid"
-			src="data:png;base64,' . \base64_encode($content) . '" alt="img">')->collapseWhitespace();
+			src="data:png;base64,' . \base64_encode($binaryImgContent) . '" alt="img">')->collapseWhitespace();
     }
 
     //###< API ###

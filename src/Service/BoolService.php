@@ -56,14 +56,16 @@ class BoolService
         ;
     }
 
+	/**/
     public function isCurrentConsolePathStartsWithSlash(): bool
     {
-        return \str_starts_with(Path::normalize(\getcwd()), '/');
+		$cwd = \getcwd();
+		
+        return false
+			|| \str_starts_with($cwd, '/')
+			|| \str_starts_with($cwd, '\\')
+		;
     }
 
     //###< API ###
-
-    //###> HELPER ###
-
-    //###< HELPER ###
 }

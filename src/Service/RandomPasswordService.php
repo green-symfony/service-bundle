@@ -2,7 +2,7 @@
 
 namespace GS\Service\Service;
 
-class RandomPassword
+class RandomPasswordService
 {
 	public function __construct() {}
 	

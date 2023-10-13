@@ -11,24 +11,29 @@ use GS\Service\Service\{
 use GS\Command\Command\{
     AbstractCommand
 };
+use Symfony\Contracts\Translation\TranslatorInterface;
+use GS\Service\Service\ConfigService;
 
 class DumpInfoService
 {
     public function __construct(
         protected readonly StringService $stringService,
+        protected readonly TranslatorInterface $t,
+        protected readonly ConfigService $configService,
     ) {
     }
 
 
     //###> API ###
-
+	
+	/**/
     public function dumpInfoAboutCurrentIp(
         AbstractCommand $command,
     ): void {
         $command->getIo()->note([
-            'Текущий ip:'
+            $this->t->trans('gs_service.service.current_ip') . ':'
             . ' "' . $this->stringService->replaceSlashWithSystemDirectorySeparator(
-                $this->configsService->getCurrentIp()
+                $this->configService->getCurrentIp()
             ) . '"',
         ]);
     }

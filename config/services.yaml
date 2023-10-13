@@ -19,6 +19,7 @@ services:
             $appEnv:                    '%gs_service.app_env%'
             $projectDir:                '../../../../%kernel.project_dir%'
             $packageFilenames:          '%gs_service.load_packs_configs%'
+            $localDriveForTest:         '%gs_service.local_drive_for_test%'
             
             $yearRegex:                 '%gs_service.year_regex%'
             $yearRegexFull:             '%gs_service.year_regex_full%'
@@ -27,10 +28,6 @@ services:
             ###< VALUES ###
             
             ###> SERVICES ###
-            
-            ###> SYMFONY SERVICES ###
-            $slugger:                   '@slugger'
-            ###< SYMFONY SERVICES ###
             
             ###> BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
             #$faker:                     '@gs_service.faker'
