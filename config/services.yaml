@@ -15,6 +15,7 @@ services:
         autoconfigure:      false
         
         bind:
+            ###> !BORROW THESE VALUES! ###
             ###> VALUES ###
             $appEnv:                    '%gs_service.app_env%'
             $projectDir:                '../../../../%kernel.project_dir%'
@@ -35,3 +36,4 @@ services:
             ###< BUNDLE SERVICES (You can use them by @<name> in your services.yaml) ###
             
             ###< SERVICES ###
+            ###< !BORROW THESE VALUES! ###
