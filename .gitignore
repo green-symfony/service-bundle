@@ -2,6 +2,7 @@
 
 ###> bundles ###
 /bundles/
+/composer.lock
 
 ###> source files ###
 *.rar
