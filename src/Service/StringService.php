@@ -225,7 +225,7 @@ class StringService
     public function getPathnameWithoutExt(
 		string $path,
 	): string {
-        return \preg_replace('~[.].+$~iu', '', $path);
+        return \preg_replace('~[.][^.]+$~iu', '', $path);
     }
 
 	/*
