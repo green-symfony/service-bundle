@@ -1,3 +1,6 @@
 gs_service:
     service:
         current_ip: 'Текущий ip'
+        
+    exception:
+        ip_v4_must_be_with_two_shlashes_in_the_beginning: 'Путь "%path%" должен содержать ровно два слеша в начале своего пути, но это не так'

@@ -65,6 +65,30 @@ class StringService
     //###> API ###
 
 	/*
+		isser
+	*/
+    public function isResembleNetworkIpV4(
+		string $path,
+	): bool {
+		return \preg_match(
+			'~^' . $this->slashOfIpRegex . $this->ipV4Regex . '.*$~',
+			\trim($path),
+		) === 1;
+	}
+
+	/*
+		isser
+	*/
+    public function isNetworkIpV4HasExactlyDoubleShashInTheBeginning(
+		string $path,
+	): bool {
+		return \preg_match(
+			'~^[/\\\]{2}' . $this->ipV4Regex . '.*$~',
+			\trim($path),
+		) === 1;
+	}
+
+	/*
 		Do strings contain the same text?
 		
 		The empty $string doesn't contain into any not empty string!
