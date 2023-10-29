@@ -1,6 +1,3 @@
 gs_service:
     service:
         current_ip: 'Current ip'
-        
-    exception:
-        ip_v4_must_be_with_two_shlashes_in_the_beginning: 'The path "%path%" must contain exactly two slashes in the beginning'
