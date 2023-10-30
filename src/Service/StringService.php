@@ -67,7 +67,7 @@ class StringService
 	/*
 		isser
 	*/
-    public function isResembleNetworkIpV4(
+    public function isPathLikeNetworkIpV4(
 		string $path,
 	): bool {
 		return \preg_match(
