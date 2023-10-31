@@ -12,6 +12,7 @@ gs_service:
     load_packs_configs:
         -   pack_name:      'monolog'
             pack_rel_path:  ~
+            does_not_exist_mess: 'your_namespace.exception.file_must_exist' # (NOT REQUIRED) Translated message
     
     year_regex:         '(?:\b[0-9]{4}\b|\b[0-9]{2}\b)'
     year_regex_full:    '[0-9]{4}'

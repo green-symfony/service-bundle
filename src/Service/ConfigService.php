@@ -45,13 +45,15 @@ use GS\Service\Service\{
 abstract class ConfigService
 {
 	//###> !CHANGE ME! ###
-	public const DEFAULT_PACK_EXT = 'yaml';
-	public const DEFAULT_PACK_REL_PATH	= 'config/packages';
+	public const DEFAULT_PACK_EXT				= 'yaml';
+	public const DEFAULT_PACK_REL_PATH			= 'config/packages';
+	public const DEFAULT_DOES_NOT_EXIST_MESS	= 'gs_service.exception.file_does_not_exist';
 	//###> !CHANGE ME! ###
 	
 	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
 	public const PACK_NAME				= 'pack_name';
 	public const PACK_REL_PATH			= 'pack_rel_path';
+	public const DOES_NOT_EXIST_MESS	= 'does_not_exist_mess';
 	
 	/*
 		[
@@ -74,6 +76,7 @@ abstract class ConfigService
 			]
 		*/
 		protected readonly array $packageFilenames,
+		protected $t,
 	) {
 		$this->initPackageFilenameDataByPackageFilenames();
 	}
@@ -173,9 +176,8 @@ abstract class ConfigService
 	): array {
 		
 		// Abs path for locator
-		$absPath = Path::makeAbsolute(
+		$absPath = $this->getConfigurationFilePath(
 			$packRelPath,
-			$this->projectDir,
 		);
 		// abs paths
 		$fileLocator = new FileLocator(
@@ -213,14 +215,25 @@ abstract class ConfigService
 		//###> without it, it's useless
 		if (empty($this->packageFilenames)) return;
 		
-		foreach($this->packageFilenames as [
-			self::PACK_NAME		=> $packName,
-			self::PACK_REL_PATH	=> $packRelPath,
-		]) {
+		foreach($this->packageFilenames as $packageConfig) {
+			[
+				self::PACK_NAME		=> $packName,
+				self::PACK_REL_PATH	=> $packRelPath,
+			] = $packageConfig;
+			
 			[
 				$filename,
 				$packRelPath,
 			] = $this->getPackFilenameAndRelPath($packName, $packRelPath);
+			
+			//###> check
+			$this->checkFileExisting(
+				$this->getConfigurationFilePath(
+					$packRelPath,
+					$filename,
+				),
+				$packageConfig,
+			);
 			
 			$this->setPackageFilenameData(
 				$filename,
@@ -253,12 +266,6 @@ abstract class ConfigService
 		return $this;
 	}
 	
-	private function getFilenameByPackname(
-		string $packName,
-	): string {
-		return (string) u($packName)->ensureEnd($this->getExt($packName));
-	}
-	
 	private function getExt(
 		string $filename,
 	): string {
@@ -274,6 +281,35 @@ abstract class ConfigService
 			$packRelPath,
 			$filename,
 		);
+	}
+	
+	private function checkFileExisting(
+		string $absPathToFile,
+		array $packageConfig,
+	): void {
+		if (!\is_file($absPathToFile)) {		
+			throw new \Exception($this->t->trans(
+				$packageConfig[self::DOES_NOT_EXIST_MESS],
+				[
+					'%path%' => $absPathToFile,
+				],
+			));
+		}
+	}
+	
+	private function getConfigurationFilePath(
+		string...$partsAfterProjectDir,
+	): string {
+		return $this->stringService->getPath(
+			$this->projectDir,
+			...$partsAfterProjectDir,
+		);
+	}
+	
+	private function getFilenameByPackname(
+		string $packName,
+	): string {
+		return (string) u($packName)->ensureEnd($this->getExt($packName));
 	}
 	
 	private function getPackRelPath(

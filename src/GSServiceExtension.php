@@ -189,7 +189,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 				)
 			;			
 		}
-
+	
 		foreach([
 			[
 				StringService::class,
@@ -325,6 +325,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                         ConfigService::PACK_REL_PATH,
                     );
                     */
+					//###>
                     $packName = null;
                     if (isset($configService[ConfigService::PACK_NAME])) {
                         $packName = $configService[ConfigService::PACK_NAME];
@@ -332,6 +333,10 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                     $packRelPath = null;
                     if (isset($configService[ConfigService::PACK_REL_PATH])) {
                         $packRelPath = $configService[ConfigService::PACK_REL_PATH];
+                    }
+                    $doesNotExistMess = null;
+                    if (isset($configService[ConfigService::DOES_NOT_EXIST_MESS])) {
+                        $doesNotExistMess = $configService[ConfigService::DOES_NOT_EXIST_MESS];
                     }
 
                     if ($packName == false) {
@@ -342,8 +347,9 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                     }
 
                     $configsServiceResult [] = [
-                        ConfigService::PACK_NAME =>     $packName,
-                        ConfigService::PACK_REL_PATH => $packRelPath,
+                        ConfigService::PACK_NAME			=> $packName,
+                        ConfigService::PACK_REL_PATH		=> $packRelPath,
+                        ConfigService::DOES_NOT_EXIST_MESS	=> $doesNotExistMess,
                     ];
                 }
                 return $configsServiceResult;
