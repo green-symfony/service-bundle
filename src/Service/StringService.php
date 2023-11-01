@@ -71,7 +71,7 @@ class StringService
 		string $path,
 	): bool {
 		return \preg_match(
-			'~^' . $this->slashOfIpRegex . $this->ipV4Regex . '.*$~',
+			'~^(?:' . $this->slashOfIpRegex . ')?' . $this->ipV4Regex . '.*$~',
 			\trim($path),
 		) === 1;
 	}
