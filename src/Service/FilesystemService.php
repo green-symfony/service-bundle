@@ -105,6 +105,8 @@ class FilesystemService
 
 	/*
 		You have to make a file by path $to in your $callback
+		
+		If something's wrong just throw \Exception in $callback
 	*/
     public function executeWithoutChangeMTime(
         \Closure|\callable $callback,
@@ -478,13 +480,20 @@ class FilesystemService
                 return $madeResults;
             }
 
-            $this->detectMakeTypeAndExecute(
-                $type,
-                $from,
-                $toTmp,
-                $exactlyMakeIt,
-            );
-
+			try {
+                $this->detectMakeTypeAndExecute(
+					$type,
+					$from,
+					$toTmp,
+					$exactlyMakeIt,
+				);
+            } catch (\Exception $e) {
+                if (\is_file($toTmp)) {
+					$this->filesystem->remove($toTmp);
+				}
+				throw $e;
+            }
+            
             // tmp -> realTo
             $this->mkdir(
                 $this->stringService->getDirectory($to),
