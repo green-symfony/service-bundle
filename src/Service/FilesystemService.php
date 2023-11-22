@@ -443,6 +443,9 @@ class FilesystemService
         ;
     }
 
+	/*
+		If there is an Exception during excuting callback type it removes created tmp file
+	*/
     private function make(
         string|\Closure|\callable $type,
         string $from,
