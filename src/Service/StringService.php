@@ -427,7 +427,7 @@ class StringService
         string $path,
         string $basePath,
     ): string {
-        if (Path::isAbsolute($path)) {
+		if (Path::isAbsolute($path)) {
             $absPath = $path;
         } else {
             $absPath = Path::makeAbsolute($path, $basePath);

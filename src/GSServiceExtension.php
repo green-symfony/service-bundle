@@ -312,7 +312,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         ServiceContainer::setParametersForce(
             $container,
             callbackGetValue: static function ($key) use (&$config, $pa) {
-                $configsServiceResult = [];
+                $loadPacksConfigs = [];
                 $configsService = $pa->getValue($config, '[' . $key . ']');
                 foreach ($configsService as $configService) {
                     /*
@@ -345,14 +345,19 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                     if ($packRelPath == false) {
                         $packRelPath = null;
                     }
-
-                    $configsServiceResult [] = [
+					
+					$lazyLoad = $configService[ConfigService::LAZY_LOAD]
+						?? ConfigService::DEFAULT_LAZY_LOAD
+					;
+					
+                    $loadPacksConfigs [] = [
                         ConfigService::PACK_NAME			=> $packName,
                         ConfigService::PACK_REL_PATH		=> $packRelPath,
+                        ConfigService::LAZY_LOAD			=> $lazyLoad,
                         ConfigService::DOES_NOT_EXIST_MESS	=> $doesNotExistMess,
                     ];
                 }
-                return $configsServiceResult;
+                return $loadPacksConfigs;
             },
             parameterPrefix: self::PREFIX,
             keys: [

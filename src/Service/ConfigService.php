@@ -48,12 +48,14 @@ abstract class ConfigService
 	public const DEFAULT_PACK_EXT				= 'yaml';
 	public const DEFAULT_PACK_REL_PATH			= 'config/packages';
 	public const DEFAULT_DOES_NOT_EXIST_MESS	= 'gs_service.exception.file_does_not_exist';
+	public const DEFAULT_LAZY_LOAD				= false;
 	//###> !CHANGE ME! ###
 	
 	public const CONFIG_SERVICE_KEY		= 'load_packs_configs';
 	public const PACK_NAME				= 'pack_name';
 	public const PACK_REL_PATH			= 'pack_rel_path';
 	public const DOES_NOT_EXIST_MESS	= 'does_not_exist_mess';
+	public const LAZY_LOAD				= 'lazy_load';
 	
 	/*
 		[
@@ -67,7 +69,7 @@ abstract class ConfigService
 		protected readonly BoolService $boolService,
 		protected readonly StringService $stringService,
 		protected readonly string $projectDir,
-		/*
+		/* INTO GSServiceExtension::setParametersFromBundleConfiguration()
 			[
 				[
 					ConfigService::PACK_NAME		=> <>,
@@ -104,7 +106,10 @@ abstract class ConfigService
 			...
 		);
 		
-		1) SAVES RESULTS
+		1) SAVES GOT RESULTS
+		
+		Return type
+			With the help of propertyAccessString it can be a value
 	*/
 	public function getPackageValue(
 		string $packName,
@@ -116,12 +121,16 @@ abstract class ConfigService
 			$packRelPath,
 		] = $this->getPackFilenameAndRelPath($packName, $packRelPath);
 		
+		$this->setPackageFilenameData(
+			$filename,
+			$packRelPath,
+		);
+		
 		$fromLoaded = $this->getConfigFromLoadedPackageFilenameData(
 			$filename,
 			$packRelPath,
 		);
 		
-		//###> EXIT POINT
 		if (!\is_null($fromLoaded)) {
 			return
 				\is_null($propertyAccessString)
@@ -133,14 +142,7 @@ abstract class ConfigService
 				;
 		}
 		
-		$this->setPackageFilenameData(
-			$filename,
-			$packRelPath,
-		);
-		return $this->getPackageValue(
-			$filename,
-			$propertyAccessString,
-		);
+		return $fromLoaded;
 	}
 
     public function getCurrentIp(): string
@@ -165,9 +167,49 @@ abstract class ConfigService
 			$this->loadedPackageFilenameData,
 			$this->getUniqPackId($filename, $packRelPath),
 		);
-		if ($config != false) $configFromLoadedConfig = $config;
+		if ($config !== null) {
+			if (!\is_array($config)) $config = [$config];
+			$configFromLoadedConfig = $config;
+		}
 		
 		return $configFromLoadedConfig;
+	}
+	
+	private function getConfigFromPackageFilenames(
+		string $filename,
+		string $packRelPath,
+	): ?array {
+		$configFromPackageFilenames = null;
+		
+		if (empty($this->packageFilenames)) return null;
+		
+		$id = $this->getUniqPackId($filename, $packRelPath);
+		
+		foreach($this->packageFilenames as $packageConfig) {
+			[
+				self::PACK_NAME		=> $packName,
+				self::PACK_REL_PATH	=> $packRelPath,
+			] = $packageConfig;
+			[
+				$filenameFromConfig,
+				$packRelPathFromConfig,
+			] = $this->getPackFilenameAndRelPath($packName, $packRelPath);
+			$idFromConfig = $this->getUniqPackId($filenameFromConfig, $packRelPathFromConfig);
+			
+			if ($id === $idFromConfig) {
+				$configFromPackageFilenames = $packageConfig;
+				break;
+			}
+		}
+		unset($packageConfig);
+		
+		if ($configFromPackageFilenames !== null) {
+			if (!\is_array($configFromPackageFilenames)) {
+				$configFromPackageFilenames = [$configFromPackageFilenames];
+			}
+		}
+		
+		return $configFromPackageFilenames;
 	}
 	
 	private function getCalculatedConfig(
@@ -175,10 +217,16 @@ abstract class ConfigService
 		string $packRelPath,
 	): array {
 		
+		$this->checkFileExisting(
+			$packRelPath,
+			$filename,
+		);
+		
 		// Abs path for locator
 		$absPath = $this->getConfigurationFilePath(
 			$packRelPath,
 		);
+		
 		// abs paths
 		$fileLocator = new FileLocator(
 			[
@@ -219,7 +267,10 @@ abstract class ConfigService
 			[
 				self::PACK_NAME		=> $packName,
 				self::PACK_REL_PATH	=> $packRelPath,
+				self::LAZY_LOAD		=> $lazyLoad,
 			] = $packageConfig;
+			
+			if ($lazyLoad == true) continue;
 			
 			[
 				$filename,
@@ -228,11 +279,8 @@ abstract class ConfigService
 			
 			//###> check
 			$this->checkFileExisting(
-				$this->getConfigurationFilePath(
-					$packRelPath,
-					$filename,
-				),
-				$packageConfig,
+				$packRelPath,
+				$filename,
 			);
 			
 			$this->setPackageFilenameData(
@@ -257,12 +305,14 @@ abstract class ConfigService
 		string $filename,
 		string $packRelPath,
 	): self {
-		$this->loadedPackageFilenameData[$this->getUniqPackId($filename, $packRelPath)]
-			= $this->getCalculatedConfig(
-				filename:		$filename,
-				packRelPath:	$packRelPath,
-			)
-		;
+		$a =& $this->loadedPackageFilenameData;
+		$k = $this->getUniqPackId($filename, $packRelPath);
+		if ($this->boolService->isGet($a, $k) !== null) return $this;
+		
+		$a[$k] = $this->getCalculatedConfig(
+			filename:		$filename,
+			packRelPath:	$packRelPath,
+		);
 		return $this;
 	}
 	
@@ -284,12 +334,24 @@ abstract class ConfigService
 	}
 	
 	private function checkFileExisting(
-		string $absPathToFile,
-		array $packageConfig,
+		string $packRelPath,
+		string $filename,
 	): void {
+		$absPathToFile = $this->getConfigurationFilePath(
+			$packRelPath,
+			$filename,
+		);
+		
+		$config = $this->getConfigFromPackageFilenames(
+			$filename,
+			$packRelPath,
+		);
+		
+		$mess = $config[self::DOES_NOT_EXIST_MESS] ?? self::DEFAULT_DOES_NOT_EXIST_MESS;
+		
 		if (!\is_file($absPathToFile)) {		
 			throw new \Exception($this->t->trans(
-				$packageConfig[self::DOES_NOT_EXIST_MESS],
+				$mess,
 				[
 					'%path%' => $absPathToFile,
 				],
