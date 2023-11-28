@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class ParserService
 {
+	public function __construct() {}
+	
     //###> API ###
 
 	/*

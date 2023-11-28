@@ -18,7 +18,7 @@ class DumpInfoService
 {
     public function __construct(
         protected readonly StringService $stringService,
-        protected readonly TranslatorInterface $t,
+        protected readonly TranslatorInterface $gsServiceT,
         protected readonly ConfigService $configService,
     ) {
     }
@@ -31,7 +31,7 @@ class DumpInfoService
         AbstractCommand $command,
     ): void {
         $command->getIo()->note([
-            $this->t->trans('gs_service.service.current_ip') . ':'
+            $this->gsServiceT->trans('gs_service.service.current_ip') . ':'
             . ' "' . $this->stringService->replaceSlashWithSystemDirectorySeparator(
                 $this->configService->getCurrentIp()
             ) . '"',

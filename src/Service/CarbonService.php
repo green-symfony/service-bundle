@@ -36,7 +36,7 @@ use GS\Service\IsoFormat\{
 class CarbonService
 {
     public function __construct(
-        protected $carbonFactory,
+        protected $gsServiceCarbonFactory,
     ) {
     }
 
@@ -77,7 +77,7 @@ class CarbonService
 	*/
     public function getCurrentYear(): string|int
     {
-        $carbon = $this->carbonFactory->make(
+        $carbon = $this->gsServiceCarbonFactory->make(
             Carbon::now('UTC'),
         );
         return $carbon->year;
@@ -86,7 +86,7 @@ class CarbonService
     /* MMMM month as a word */
     public function getCurrentMonthWord(): string
     {
-        return $this->carbonFactory
+        return $this->gsServiceCarbonFactory
             ->make(Carbon::now('UTC'))
             ->isoFormat('MMMM')
         ;
@@ -95,7 +95,7 @@ class CarbonService
     /* MMMM month as a word */
     public function getNextMonthWord(): string
     {
-        return $this->carbonFactory
+        return $this->gsServiceCarbonFactory
             ->make(Carbon::now('UTC'))
             ->addMonthsNoOverflow(1)
             ->isoFormat('MMMM')
@@ -111,7 +111,7 @@ class CarbonService
         $monthWord = null;
 
         try {
-            $carbon = $this->carbonFactory
+            $carbon = $this->gsServiceCarbonFactory
                 ->make(Carbon::now('UTC'))
                 ->month($monthNumber)
             ;

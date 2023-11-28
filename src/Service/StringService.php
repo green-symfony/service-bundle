@@ -54,10 +54,10 @@ class StringService
         protected readonly CarbonService $carbonService,
         protected readonly BoolService $boolService,
         protected readonly RegexService $regexService,
-        protected readonly string $yearRegex,
-        protected readonly string $yearRegexFull,
-        protected readonly string $ipV4Regex,
-        protected readonly string $slashOfIpRegex,
+        protected readonly string $gsServiceYearRegex,
+        protected readonly string $gsServiceYearRegexFull,
+        protected readonly string $gsServiceIpV4Regex,
+        protected readonly string $gsServiceSlashOfIpRegex,
     ) {
     }
 	
@@ -71,7 +71,7 @@ class StringService
 		string $path,
 	): bool {
 		return \preg_match(
-			'~^(?:' . $this->slashOfIpRegex . ')?' . $this->ipV4Regex . '.*$~',
+			'~^(?:' . $this->gsServiceSlashOfIpRegex . ')?' . $this->gsServiceIpV4Regex . '.*$~',
 			\trim($path),
 		) === 1;
 	}
@@ -83,7 +83,7 @@ class StringService
 		string $path,
 	): bool {
 		return \preg_match(
-			'~^[/\\\]{2}' . $this->ipV4Regex . '.*$~',
+			'~^[/\\\]{2}' . $this->gsServiceIpV4Regex . '.*$~',
 			\trim($path),
 		) === 1;
 	}
@@ -291,14 +291,14 @@ class StringService
         $currentYear = $this->carbonService->getCurrentYear();
         $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
-        $yearRegex = $this->yearRegex;
+        $gsServiceYearRegex = $this->gsServiceYearRegex;
 
         if ($fullYear) {
-            $yearRegex = $this->yearRegexFull;
+            $gsServiceYearRegex = $this->gsServiceYearRegexFull;
         }
 
         \preg_match(
-            '~(?<year>' . $yearRegex . ')~',
+            '~(?<year>' . $gsServiceYearRegex . ')~',
             $yearSubstr,
             $matches,
         );
@@ -333,7 +333,7 @@ class StringService
         $firstTwoFiguresFromCurrentYear = \substr($currentYear, 0, 2);
 
         \preg_match_all(
-            '~(?<year>' . $this->yearRegex . ')~',
+            '~(?<year>' . $this->gsServiceYearRegex . ')~',
             $yearSubstr,
             $matches,
         );
@@ -484,7 +484,7 @@ class StringService
 
             $matches = [];
             \preg_match(
-                '~^(?<' . $ipRootName . '>' . $this->slashOfIpRegex . '' . $this->ipV4Regex . ').*~',
+                '~^(?<' . $ipRootName . '>' . $this->gsServiceSlashOfIpRegex . '' . $this->gsServiceIpV4Regex . ').*~',
                 \trim($path),
                 $matches,
             );
@@ -610,13 +610,13 @@ class StringService
     private function isOnlyNetworkPath(
         string $path,
     ): bool {
-        return \preg_match('~^' . $this->slashOfIpRegex . $this->ipV4Regex . '$~', \trim($path)) === 1;
+        return \preg_match('~^' . $this->gsServiceSlashOfIpRegex . $this->gsServiceIpV4Regex . '$~', \trim($path)) === 1;
     }
 
     private function isNetworkPath(
         string $path,
     ): bool {
-        return \preg_match('~^' . $this->slashOfIpRegex . '.*$~', \trim($path)) === 1;
+        return \preg_match('~^' . $this->gsServiceSlashOfIpRegex . '.*$~', \trim($path)) === 1;
     }
 
     private function getNumberThatMoreSimilarCurrentYear(

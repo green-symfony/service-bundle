@@ -11,11 +11,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ServiceContainer
 {
-    public function __construct()
-    {
-    }
-
-
+	public function __construct() {}
+	
     //###> API ###
 
     /*

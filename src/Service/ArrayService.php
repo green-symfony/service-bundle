@@ -4,6 +4,8 @@ namespace GS\Service\Service;
 
 class ArrayService
 {
+	public function __construct() {}
+	
     //###> API ###
 
     public static function getKeyValueString(

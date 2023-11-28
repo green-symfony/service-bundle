@@ -8,11 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class HtmlService
 {
-    public function __construct()
-    {
-    }
-
-
+	public function __construct() {}
+	
     //###> API ###
 
 	/**/

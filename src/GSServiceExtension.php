@@ -84,16 +84,16 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             timezone:   $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
             ),
-			yearRegex:	$container->getParameter(
+			gsServiceYearRegex:	$container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
             ),
-			yearRegexFull:	$container->getParameter(
+			gsServiceYearRegexFull:	$container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_FULL_KEY),
             ),
-			ipV4Regex:	$container->getParameter(
+			gsServiceIpV4Regex:	$container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::IP_V_4_REGEX_KEY),
             ),
-			slashOfIpRegex:	$container->getParameter(
+			gsServiceSlashOfIpRegex:	$container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
             ),
         );
@@ -194,30 +194,42 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 			[
 				StringService::class,
 				[
-					'$yearRegex' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
+					'$gsServiceYearRegex' => $container->getParameter(
+						ServiceContainer::getParameterName(
+							self::PREFIX,
+							self::YEAR_REGEX_KEY,
+						),
 					),
-					'$yearRegexFull' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_FULL_KEY),
+					'$gsServiceYearRegexFull' => $container->getParameter(
+						ServiceContainer::getParameterName(
+							self::PREFIX,
+							self::YEAR_REGEX_FULL_KEY,
+						),
 					),
-					'$ipV4Regex' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::IP_V_4_REGEX_KEY),
+					'$gsServiceIpV4Regex' => $container->getParameter(
+						ServiceContainer::getParameterName(
+							self::PREFIX,
+							self::IP_V_4_REGEX_KEY,
+						),
 					),
-					'$slashOfIpRegex' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
+					'$gsServiceSlashOfIpRegex' => $container->getParameter(
+						ServiceContainer::getParameterName(
+							self::PREFIX,
+							self::SLASH_OF_IP_REGEX_KEY,
+						),
 					),
 				],
 			],
 			[
 				FilesystemService::class,
 				[
-					'$localDriveForTest' => $container->getParameter(
+					'$gsServiceLocalDriveForTest' => $container->getParameter(
 						ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
 					),
-					'$appEnv' => $container->getParameter(
+					'$gsServiceAppEnv' => $container->getParameter(
 						ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
 					),
-					'$carbonFactory' => $container->getDefinition(
+					'$gsServiceCarbonFactory' => $container->getDefinition(
 						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
 					),
 				],
@@ -225,7 +237,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 			[
 				CarbonService::class,
 				[
-					'$carbonFactory' => $container->getDefinition(
+					'$gsServiceCarbonFactory' => $container->getDefinition(
 						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
 					),
 				],

@@ -68,7 +68,7 @@ abstract class ConfigService
 	public function __construct(
 		protected readonly BoolService $boolService,
 		protected readonly StringService $stringService,
-		protected readonly string $projectDir,
+		protected readonly string $gsServiceProjectDir,
 		/* INTO GSServiceExtension::setParametersFromBundleConfiguration()
 			[
 				[
@@ -77,8 +77,8 @@ abstract class ConfigService
 				],
 			]
 		*/
-		protected readonly array $packageFilenames,
-		protected $t,
+		protected readonly array $gsServicePackageFilenames,
+		protected $gsServiceT,
 	) {
 		$this->initPackageFilenameDataByPackageFilenames();
 	}
@@ -181,11 +181,11 @@ abstract class ConfigService
 	): ?array {
 		$configFromPackageFilenames = null;
 		
-		if (empty($this->packageFilenames)) return null;
+		if (empty($this->gsServicePackageFilenames)) return null;
 		
 		$id = $this->getUniqPackId($filename, $packRelPath);
 		
-		foreach($this->packageFilenames as $packageConfig) {
+		foreach($this->gsServicePackageFilenames as $packageConfig) {
 			[
 				self::PACK_NAME		=> $packName,
 				self::PACK_REL_PATH	=> $packRelPath,
@@ -261,9 +261,9 @@ abstract class ConfigService
 		if (!empty($this->loadedPackageFilenameData)) return;
 		
 		//###> without it, it's useless
-		if (empty($this->packageFilenames)) return;
+		if (empty($this->gsServicePackageFilenames)) return;
 		
-		foreach($this->packageFilenames as $packageConfig) {
+		foreach($this->gsServicePackageFilenames as $packageConfig) {
 			[
 				self::PACK_NAME		=> $packName,
 				self::PACK_REL_PATH	=> $packRelPath,
@@ -349,8 +349,8 @@ abstract class ConfigService
 		
 		$mess = $config[self::DOES_NOT_EXIST_MESS] ?? self::DEFAULT_DOES_NOT_EXIST_MESS;
 		
-		if (!\is_file($absPathToFile)) {		
-			throw new \Exception($this->t->trans(
+		if (!\is_file($absPathToFile)) {
+			throw new \Exception($this->gsServiceT->trans(
 				$mess,
 				[
 					'%path%' => $absPathToFile,
@@ -363,7 +363,7 @@ abstract class ConfigService
 		string...$partsAfterProjectDir,
 	): string {
 		return $this->stringService->getPath(
-			$this->projectDir,
+			$this->gsServiceProjectDir,
 			...$partsAfterProjectDir,
 		);
 	}

@@ -4,10 +4,8 @@ namespace GS\Service\Service;
 
 class BufferService
 {
-    public function __construct()
-    {
-    }
-
+	public function __construct() {}
+	
     //###> API ###
 
     /**

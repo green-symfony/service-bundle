@@ -60,9 +60,9 @@ class FilesystemService
         protected readonly DumpInfoService $dumpInfoService,
         protected readonly StringService $stringService,
         protected readonly SluggerInterface $slugger,
-        protected readonly string $localDriveForTest,
-        protected readonly string $appEnv,
-        protected $carbonFactory,
+        protected readonly string $gsServiceLocalDriveForTest,
+        protected readonly string $gsServiceAppEnv,
+        protected $gsServiceCarbonFactory,
     ) {
         $this->filesystem = new Filesystem();
 
@@ -170,8 +170,8 @@ class FilesystemService
     */
     public function getLocalRoot(): string
     {
-        if ($this->appEnv === 'test') {
-            return $this->localDriveForTest;
+        if ($this->gsServiceAppEnv === 'test') {
+            return $this->gsServiceLocalDriveForTest;
         }
 
         $NDS = Path::normalize(\DIRECTORY_SEPARATOR);

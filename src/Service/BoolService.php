@@ -36,11 +36,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class BoolService
 {
-    public function __construct()
-    {
-    }
-
-
+	public function __construct() {}
+	
     //###> API ###
 
     /*

@@ -31,8 +31,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class RegexService
 {
-    public function __construct() {}
-
+	public function __construct() {}
+	
     //###> API ###
 
 	/*
