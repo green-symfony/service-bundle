@@ -5,7 +5,7 @@
             "GS\\Service\\": "src/"
         }
     },
-	"version":		"0.0.0",
+	"version":		"1.0.0",
     "type":			"symfony-bundle",
     "description":	"Commonly used symfony services for extending into Symfony Application.",
     "authors": [
