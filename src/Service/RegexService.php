@@ -34,6 +34,14 @@ class RegexService
 	public function __construct() {}
 	
     //###> API ###
+	
+	/*
+		Gets regex of tmp docx?
+	*/
+	public function getNotTmpDocxRegex(): string
+    {
+        return '~^\~[$].*[.]docx?$~ui';
+    }
 
 	/*
 		Gets something transformed into regex able one
