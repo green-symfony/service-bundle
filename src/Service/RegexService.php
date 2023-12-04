@@ -31,16 +31,19 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class RegexService
 {
-	public function __construct() {}
+	public function __construct(
+		#[Autowire(value: '%gs_service.start_of_win_sys_file_regex%')]
+		protected readonly string $gsServiceStartOfWinSysFileRegex,
+	) {}
 	
     //###> API ###
 	
 	/*
-		Gets regex of tmp docx?
+		Gets regex of win system file
 	*/
-	public function getNotTmpDocxRegex(): string
+	public function getWinSysFileRegex(): string
     {
-        return '~^\~[$].*[.]docx?$~ui';
+        return '~^' . $this->gsServiceStartOfWinSysFileRegex . '.*[.]docx?$~ui';
     }
 
 	/*
