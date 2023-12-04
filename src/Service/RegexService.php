@@ -41,7 +41,7 @@ class RegexService
 	/*
 		Gets regex of win system file
 	*/
-	public function getWinSysFileRegex(): string
+	public function getDocxSysFileRegex(): string
     {
         return '~^' . $this->gsServiceStartOfWinSysFileRegex . '.*[.]docx?$~ui';
     }
