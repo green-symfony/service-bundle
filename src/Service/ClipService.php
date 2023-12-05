@@ -37,12 +37,12 @@ class ClipService
 
     //###> API ###
 
-	/*
-		Copy into OS buffer
-	*/
+    /*
+        Copy into OS buffer
+    */
     public function copy(
-		int|float|string|null $contents,
-	): void {
+        int|float|string|null $contents,
+    ): void {
         if ($contents === null) {
             return;
         }

@@ -19,7 +19,6 @@ use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use GS\Service\Service\ServiceContainer;
 use GS\Service\Service\ConfigService;
-
 use GS\Service\Service\ArrayService;
 use GS\Service\Service\BoolService;
 use GS\Service\Service\BufferService;
@@ -46,7 +45,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     public const LOCAL_DRIVE_FOR_TEST = 'local_drive_for_test';
     public const FAKER_SERVICE_KEY = 'faker';
     public const CARBON_FACTORY_SERVICE_KEY = 'carbon_factory';
-	
+
     public const YEAR_REGEX_KEY = 'year_regex';
     public const YEAR_REGEX_FULL_KEY = 'year_regex_full';
     public const IP_V_4_REGEX_KEY = 'ip_v4_regex';
@@ -84,16 +83,16 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             timezone:   $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
             ),
-			gsServiceYearRegex:	$container->getParameter(
+            gsServiceYearRegex: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
             ),
-			gsServiceYearRegexFull:	$container->getParameter(
+            gsServiceYearRegexFull: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_FULL_KEY),
             ),
-			gsServiceIpV4Regex:	$container->getParameter(
+            gsServiceIpV4Regex: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::IP_V_4_REGEX_KEY),
             ),
-			gsServiceSlashOfIpRegex:	$container->getParameter(
+            gsServiceSlashOfIpRegex:    $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
             ),
         );
@@ -120,138 +119,141 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         $this->registerBundleTagsForAutoconfiguration(
             $container,
         );
-		$this->setDefinitions(
+        $this->setDefinitions(
             $container,
-		);
+        );
     }
 
     //###> HELPERS ###
 
     private function setDefinitions(
-		ContainerBuilder $container,
-	): void {
-		foreach([
-			[
-				ArrayService::class,
-				ArrayService::class,
-			],
-			[
-				BoolService::class,
-				BoolService::class,
-			],
-			[
-				BufferService::class,
-				BufferService::class,
-			],
-			[
-				CarbonService::class,
-				CarbonService::class,
-			],
-			[
-				ClipService::class,
-				ClipService::class,
-			],
-			[
-				DumpInfoService::class,
-				DumpInfoService::class,
-			],
-			[
-				FilesystemService::class,
-				FilesystemService::class,
-			],
-			[
-				HtmlService::class,
-				HtmlService::class,
-			],
-			[
-				ParserService::class,
-				ParserService::class,
-			],
-			[
-				RandomPasswordService::class,
-				RandomPasswordService::class,
-			],
-			[
-				RegexService::class,
-				RegexService::class,
-			],
-			[
-				StringService::class,
-				StringService::class,
-			],
-		] as [ $id, $class ]) {
-			$container
-				->setDefinition(
-					$id,
-					(new Definition($class))
-						->setAutowired(true)
-					,
-				)
-			;			
-		}
-	
-		foreach([
-			[
-				StringService::class,
-				[
-					'$gsServiceYearRegex' => $container->getParameter(
-						ServiceContainer::getParameterName(
-							self::PREFIX,
-							self::YEAR_REGEX_KEY,
-						),
-					),
-					'$gsServiceYearRegexFull' => $container->getParameter(
-						ServiceContainer::getParameterName(
-							self::PREFIX,
-							self::YEAR_REGEX_FULL_KEY,
-						),
-					),
-					'$gsServiceIpV4Regex' => $container->getParameter(
-						ServiceContainer::getParameterName(
-							self::PREFIX,
-							self::IP_V_4_REGEX_KEY,
-						),
-					),
-					'$gsServiceSlashOfIpRegex' => $container->getParameter(
-						ServiceContainer::getParameterName(
-							self::PREFIX,
-							self::SLASH_OF_IP_REGEX_KEY,
-						),
-					),
-				],
-			],
-			[
-				FilesystemService::class,
-				[
-					'$gsServiceLocalDriveForTest' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
-					),
-					'$gsServiceAppEnv' => $container->getParameter(
-						ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
-					),
-					'$gsServiceCarbonFactory' => $container->getDefinition(
-						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
-					),
-				],
-			],
-			[
-				CarbonService::class,
-				[
-					'$gsServiceCarbonFactory' => $container->getDefinition(
-						ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
-					),
-				],
-			],
-		] as [ $id, $args ]) {
-			if ($container->hasDefinition($id)) {
-				$container
-					->getDefinition($id)
-					->setArguments($args)
-				;
-			}
-		}
-	}
-	
+        ContainerBuilder $container,
+    ): void {
+        foreach (
+            [
+            [
+                ArrayService::class,
+                ArrayService::class,
+            ],
+            [
+                BoolService::class,
+                BoolService::class,
+            ],
+            [
+                BufferService::class,
+                BufferService::class,
+            ],
+            [
+                CarbonService::class,
+                CarbonService::class,
+            ],
+            [
+                ClipService::class,
+                ClipService::class,
+            ],
+            [
+                DumpInfoService::class,
+                DumpInfoService::class,
+            ],
+            [
+                FilesystemService::class,
+                FilesystemService::class,
+            ],
+            [
+                HtmlService::class,
+                HtmlService::class,
+            ],
+            [
+                ParserService::class,
+                ParserService::class,
+            ],
+            [
+                RandomPasswordService::class,
+                RandomPasswordService::class,
+            ],
+            [
+                RegexService::class,
+                RegexService::class,
+            ],
+            [
+                StringService::class,
+                StringService::class,
+            ],
+            ] as [ $id, $class ]
+        ) {
+            $container
+                ->setDefinition(
+                    $id,
+                    (new Definition($class))
+                        ->setAutowired(true),
+                )
+            ;
+        }
+
+        foreach (
+            [
+            [
+                StringService::class,
+                [
+                    '$gsServiceYearRegex' => $container->getParameter(
+                        ServiceContainer::getParameterName(
+                            self::PREFIX,
+                            self::YEAR_REGEX_KEY,
+                        ),
+                    ),
+                    '$gsServiceYearRegexFull' => $container->getParameter(
+                        ServiceContainer::getParameterName(
+                            self::PREFIX,
+                            self::YEAR_REGEX_FULL_KEY,
+                        ),
+                    ),
+                    '$gsServiceIpV4Regex' => $container->getParameter(
+                        ServiceContainer::getParameterName(
+                            self::PREFIX,
+                            self::IP_V_4_REGEX_KEY,
+                        ),
+                    ),
+                    '$gsServiceSlashOfIpRegex' => $container->getParameter(
+                        ServiceContainer::getParameterName(
+                            self::PREFIX,
+                            self::SLASH_OF_IP_REGEX_KEY,
+                        ),
+                    ),
+                ],
+            ],
+            [
+                FilesystemService::class,
+                [
+                    '$gsServiceLocalDriveForTest' => $container->getParameter(
+                        ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
+                    ),
+                    '$gsServiceAppEnv' => $container->getParameter(
+                        ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
+                    ),
+                    '$gsServiceCarbonFactory' => $container->getDefinition(
+                        ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
+                    ),
+                ],
+            ],
+            [
+                CarbonService::class,
+                [
+                    '$gsServiceCarbonFactory' => $container->getDefinition(
+                        ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
+                    ),
+                ],
+            ],
+            ] as [ $id, $args ]
+        ) {
+            if ($container->hasDefinition($id)) {
+                $container
+                    ->getDefinition($id)
+                    ->setArguments($args)
+                ;
+            }
+        }
+    }
+
     private function carbonService(
         array $config,
         ContainerBuilder $container,
@@ -337,7 +339,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                         ConfigService::PACK_REL_PATH,
                     );
                     */
-					//###>
+                    //###>
                     $packName = null;
                     if (isset($configService[ConfigService::PACK_NAME])) {
                         $packName = $configService[ConfigService::PACK_NAME];
@@ -357,16 +359,16 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                     if ($packRelPath == false) {
                         $packRelPath = null;
                     }
-					
-					$lazyLoad = $configService[ConfigService::LAZY_LOAD]
-						?? ConfigService::DEFAULT_LAZY_LOAD
-					;
-					
+
+                    $lazyLoad = $configService[ConfigService::LAZY_LOAD]
+                        ?? ConfigService::DEFAULT_LAZY_LOAD
+                    ;
+
                     $loadPacksConfigs [] = [
-                        ConfigService::PACK_NAME			=> $packName,
-                        ConfigService::PACK_REL_PATH		=> $packRelPath,
-                        ConfigService::LAZY_LOAD			=> $lazyLoad,
-                        ConfigService::DOES_NOT_EXIST_MESS	=> $doesNotExistMess,
+                        ConfigService::PACK_NAME            => $packName,
+                        ConfigService::PACK_REL_PATH        => $packRelPath,
+                        ConfigService::LAZY_LOAD            => $lazyLoad,
+                        ConfigService::DOES_NOT_EXIST_MESS  => $doesNotExistMess,
                     ];
                 }
                 return $loadPacksConfigs;

@@ -4,36 +4,38 @@ namespace GS\Service\Service;
 
 class ParserService
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
 
-	/*
-		Usage:
-			[
-				$name,			// "Name"
-				$surname,		// "Surname"
-				$patronymic,	// "Patronymic"
-			] = $this->parser->getFirstNameLastNamePatronymic('   Name Surname   Patronymic');
-			
-			[
-				$name,			// "Name"
-				$surname,		// "Surname"
-				$patronymic,	// null
-			] = $this->parser->getFirstNameLastNamePatronymic('Name 				Surname');
-			
-			[
-				$name,			// "Name"
-				$surname,		// null
-				$patronymic,	// null
-			] = $this->parser->getFirstNameLastNamePatronymic(' 		Name		');
-	*/
+    /*
+        Usage:
+            [
+                $name,          // "Name"
+                $surname,       // "Surname"
+                $patronymic,    // "Patronymic"
+            ] = $this->parser->getFirstNameLastNamePatronymic('   Name Surname   Patronymic');
+
+            [
+                $name,          // "Name"
+                $surname,       // "Surname"
+                $patronymic,    // null
+            ] = $this->parser->getFirstNameLastNamePatronymic('Name                 Surname');
+
+            [
+                $name,          // "Name"
+                $surname,       // null
+                $patronymic,    // null
+            ] = $this->parser->getFirstNameLastNamePatronymic('         Name        ');
+    */
     public static function getFirstNameLastNamePatronymic(
-		string $fullName,
-	): array {
+        string $fullName,
+    ): array {
         $matches = [];
-		$fullName = \trim($fullName);
-		
+        $fullName = \trim($fullName);
+
         \preg_match('~^([a-zа-я]*)\s*([a-zа-я]*)\s*([a-zа-я]*)\s*$~iu', $fullName, $matches);
         \array_walk($matches, static fn(&$v) => $v = \trim($v));
 
@@ -41,11 +43,13 @@ class ParserService
         $lastName = null;
         $patronymic = null;
 
-        foreach ([
+        foreach (
+            [
             [ &$firstName, 1 ],
             [ &$lastName, 2 ],
             [ &$patronymic, 3 ],
-		] as [ &$propertyRef, $groupNumber ]) {
+            ] as [ &$propertyRef, $groupNumber ]
+        ) {
             if (isset($matches[$groupNumber]) && $matches[$groupNumber] !== '') {
                 $propertyRef = $matches[$groupNumber];
             }

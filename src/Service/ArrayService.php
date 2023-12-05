@@ -4,26 +4,28 @@ namespace GS\Service\Service;
 
 class ArrayService
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
-	
-	/*###> FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance ### */
-	/* FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance
-		
-		-> AbstractPatternAbleCommandUseOneThreeReplacementPartsOfRegexTrait
-	
-		Gets the first result.
+
+    /*###> FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance ### */
+    /* FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance
+
+        -> AbstractPatternAbleCommandUseOneThreeReplacementPartsOfRegexTrait
+
+        Gets the first result.
 
         If pass all the possible keys into $primaryKeysValues
-			you'll get [] guaranteed!
+            you'll get [] guaranteed!
 
         forFilter: false (for constructing aims)
             returns pattern diff array when there were interesections
             RETURNS [] WHEN THERE IS NO DIFFERENCE BETWEEN PATTERN DATA AND PASSED ONES
             RETURNS null when wasn't intersection passed $primaryKeysValues with passed $patterns
             Если $pattern имеет какие-то различия от $primaryKeysValues возвращает не пустой массив
-		forFilter: true (for filtering aims)
+        forFilter: true (for filtering aims)
             returns [] when pattern was matched
             returns null when pattern was NOT matched
     */
@@ -50,7 +52,7 @@ class ArrayService
         }
         return null;
     }
-	/*###< FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance ### */
+    /*###< FILTERING FOR REALIZATION OF \GS\Command\Trait\PatternAbleInstance ### */
 
     public static function getKeyValueString(
         array $keyValue,

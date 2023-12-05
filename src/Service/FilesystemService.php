@@ -43,14 +43,14 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FilesystemService
 {
-	//###> YOU CAN OVERRIDE IT ###
+    //###> YOU CAN OVERRIDE IT ###
     public const TMP_FILENAME_PREFIX = '';
-	/*
-		Watch out when changing it
-		This lenght depends on OS System
-	*/
+    /*
+        Watch out when changing it
+        This lenght depends on OS System
+    */
     public const MAX_TMP_FILENAME_LEN = 150;
-	//###< YOU CAN OVERRIDE IT ###
+    //###< YOU CAN OVERRIDE IT ###
 
     protected OptionsResolver $demandsOptionsResolver;
     protected readonly array $demandsKeys;
@@ -66,14 +66,14 @@ class FilesystemService
     ) {
         $this->filesystem = new Filesystem();
 
-		//###> DEMANDS ###
+        //###> DEMANDS ###
         $demands = [
             'exists',
             'isAbsolutePath',
             'isDir',
             'isFile',
         ];
-		//###< DEMANDS ###
+        //###< DEMANDS ###
         $this->demandsKeys = \array_combine($demands, $demands);
 
         $this->demandsOptionsResolver = new OptionsResolver();
@@ -83,9 +83,9 @@ class FilesystemService
 
     //###> API ###
 
-	/*
-		Throws an exception if the paths haven't passed checks of DEMANDS section
-	*/
+    /*
+        Throws an exception if the paths haven't passed checks of DEMANDS section
+    */
     public function throwIfNot(
         array $demands,
         ?string ...$paths,
@@ -93,9 +93,9 @@ class FilesystemService
         $this->ifNot(true, $demands, ...$paths);
     }
 
-	/*
-		Gets errors if the paths haven't passed checks of DEMANDS section
-	*/
+    /*
+        Gets errors if the paths haven't passed checks of DEMANDS section
+    */
     public function getErrorsIfNot(
         array $demands,
         ?string ...$paths,
@@ -103,11 +103,11 @@ class FilesystemService
         return $this->ifNot(false, $demands, ...$paths);
     }
 
-	/*
-		You have to make a file by path $to in your $callback
-		
-		If something's wrong just throw \Exception in $callback
-	*/
+    /*
+        You have to make a file by path $to in your $callback
+
+        If something's wrong just throw \Exception in $callback
+    */
     public function executeWithoutChangeMTime(
         \Closure|\callable $callback,
         string $from,
@@ -127,7 +127,7 @@ class FilesystemService
         );
     }
 
-	/**/
+    /**/
     public function copyWithoutChangeMTime(
         string $from,
         string $to,
@@ -146,7 +146,7 @@ class FilesystemService
         );
     }
 
-	/**/
+    /**/
     public function copyWithChangeMTime(
         string $from,
         string $to,
@@ -178,14 +178,14 @@ class FilesystemService
         return (string) u(\explode($NDS, Path::normalize(__DIR__))[0])->ensureEnd($NDS);
     }
 
-	/**/
+    /**/
     public function exists(
         string $path,
     ): bool {
         return $this->filesystem->exists($path);
     }
 
-	/**/
+    /**/
     public function assignCMTime(
         string $sourceCATimeAbsPath,
         string $toAbsPath,
@@ -207,13 +207,13 @@ class FilesystemService
         $this->filesystem->touch($toAbsPath, $modifiedTimestamp);
     }
 
-	/**/
+    /**/
     public function getSmallestDrive(): string
     {
         $drives         = \explode(
-			' ',
-			((string) u(\shell_exec('fsutil fsinfo drives'))->collapseWhitespace()),
-		);
+            ' ',
+            ((string) u(\shell_exec('fsutil fsinfo drives'))->collapseWhitespace()),
+        );
         $smallestDrive  = null;
 
         foreach ($drives as $drive) {
@@ -236,9 +236,9 @@ class FilesystemService
         return Path::normalize($smallestDrive);
     }
 
-	/*
-		Makes directories recursively
-	*/
+    /*
+        Makes directories recursively
+    */
     public function mkdir(
         string|iterable $dirs,
         int $mode = 0777,
@@ -246,7 +246,7 @@ class FilesystemService
         $this->filesystem->mkdir($dirs, $mode);
     }
 
-	/**/
+    /**/
     public function getDesktopPath(): string
     {
         $desktopPath = $this->stringService->getPath(
@@ -267,9 +267,9 @@ class FilesystemService
         return $desktopPath;
     }
 
-	/*
-		Is first file newer?
-	*/
+    /*
+        Is first file newer?
+    */
     public function firstFileNewer(
         \SplFileInfo|string $first,
         \SplFileInfo|string $second,
@@ -310,9 +310,9 @@ class FilesystemService
         return $carbonFirst > $carbonSecond;
     }
 
-	/*
-		Creates file into temporary OS directory
-	*/
+    /*
+        Creates file into temporary OS directory
+    */
     public function tempnam(
         ?string $path = null,
         string $ext = 'txt',
@@ -333,34 +333,34 @@ class FilesystemService
         return $this->filesystem->tempnam(
             Path::normalize(\sys_get_temp_dir()),
             \substr(
-				$this->slugger->slug(
-					static::TMP_FILENAME_PREFIX . Uuid::v1()
-				),
-				0,
-				static::MAX_TMP_FILENAME_LEN,
-			),
+                $this->slugger->slug(
+                    static::TMP_FILENAME_PREFIX . Uuid::v1()
+                ),
+                0,
+                static::MAX_TMP_FILENAME_LEN,
+            ),
             $ext,
         );
     }
 
-	/*
-		Appends the content into the file
-		DOESN'T PUT ANY \PHP_EOL, you should do it on your onw
-	*/
+    /*
+        Appends the content into the file
+        DOESN'T PUT ANY \PHP_EOL, you should do it on your onw
+    */
     public function appendToFile(
-		string $absPath,
-		$content,
-	): void {
+        string $absPath,
+        $content,
+    ): void {
         $exists = $this->isAbsPathExists($absPath);
         if ($exists) {
             $this->filesystem->appendToFile($absPath, $content, true/* LOCK */);
         }
     }
 
-	/*
-		It's a RECURSIVELY method.
-		Removes file or directories.
-	*/
+    /*
+        It's a RECURSIVELY method.
+        Removes file or directories.
+    */
     public function deleteByAbsPathIfExists(
         string $absPath,
     ): void {
@@ -443,9 +443,9 @@ class FilesystemService
         ;
     }
 
-	/*
-		If there is an Exception during excuting callback type it removes created tmp file
-	*/
+    /*
+        If there is an Exception during excuting callback type it removes created tmp file
+    */
     private function make(
         string|\Closure|\callable $type,
         string $from,
@@ -483,20 +483,20 @@ class FilesystemService
                 return $madeResults;
             }
 
-			try {
+            try {
                 $this->detectMakeTypeAndExecute(
-					$type,
-					$from,
-					$toTmp,
-					$exactlyMakeIt,
-				);
+                    $type,
+                    $from,
+                    $toTmp,
+                    $exactlyMakeIt,
+                );
             } catch (\Exception $e) {
                 if (\is_file($toTmp)) {
-					$this->filesystem->remove($toTmp);
-				}
-				throw $e;
+                    $this->filesystem->remove($toTmp);
+                }
+                throw $e;
             }
-            
+
             // tmp -> realTo
             $this->mkdir(
                 $this->stringService->getDirectory($to),
