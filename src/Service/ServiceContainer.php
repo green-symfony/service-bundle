@@ -11,15 +11,17 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ServiceContainer
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
 
     /*
         Transforms property accessor syntax into dots:
-			prefix[key1][key2]  -> prefix.key1.key2
-        
-		prefix.key1.key2    -> prefix.key1.key2
+            prefix[key1][key2]  -> prefix.key1.key2
+
+        prefix.key1.key2    -> prefix.key1.key2
     */
     public static function getParameterName(
         string|int|float|null $prefix,
@@ -31,7 +33,7 @@ class ServiceContainer
     /**
         @var $keys:
             pass the keys in property accessor syntax:
-				[root][child]
+                [root][child]
 
             in callbackGetValue:
                 PropertyAccess::createPropertyAccessor()->getValue($sourceArray, $key);
@@ -49,10 +51,10 @@ class ServiceContainer
             );
         }
     }
-	
-	/*
-		If the parameter has already set, it doesn't set it.
-	*/
+
+    /*
+        If the parameter has already set, it doesn't set it.
+    */
     public static function setParametersNoForce(
         ContainerBuilder $containerBuilder,
         callable|\Closure $callbackGetValue,
@@ -71,9 +73,9 @@ class ServiceContainer
         }
     }
 
-	/*
-		Remove definitions by ids
-	*/
+    /*
+        Remove definitions by ids
+    */
     public static function removeDefinitions(
         ContainerBuilder $containerBuilder,
         array $ids,
@@ -91,8 +93,8 @@ class ServiceContainer
     // ###> HELPER ###
 
     private static function getNormalizedPrefix(
-		int|float|string|null $prefix,
-	): string {
+        int|float|string|null $prefix,
+    ): string {
 
         $prefix ??= '';
         if ($prefix != '') {
@@ -103,8 +105,8 @@ class ServiceContainer
     }
 
     private static function getNormalizedKey(
-		int|float|string $key,
-	): string {
+        int|float|string $key,
+    ): string {
 
         $key        = \strtr((string) $key, [
             '][' => '.',

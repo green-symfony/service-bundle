@@ -84,22 +84,22 @@ class Configuration implements ConfigurationInterface
                 ->end()
 
                 ->scalarNode(GSServiceExtension::YEAR_REGEX_KEY)
-					->info('The regular expression of the year\'s number')
+                    ->info('The regular expression of the year\'s number')
                     ->defaultValue($this->gsServiceYearRegex)
                 ->end()
 
                 ->scalarNode(GSServiceExtension::YEAR_REGEX_FULL_KEY)
-					->info('The regular expression of the year\'s full number')
+                    ->info('The regular expression of the year\'s full number')
                     ->defaultValue($this->gsServiceYearRegexFull)
                 ->end()
 
                 ->scalarNode(GSServiceExtension::IP_V_4_REGEX_KEY)
-					->info('The regular expression of ip v4')
+                    ->info('The regular expression of ip v4')
                     ->defaultValue($this->gsServiceIpV4Regex)
                 ->end()
 
                 ->scalarNode(GSServiceExtension::SLASH_OF_IP_REGEX_KEY)
-					->info('The regular expression of ip\'s slashes')
+                    ->info('The regular expression of ip\'s slashes')
                     ->defaultValue($this->gsServiceSlashOfIpRegex)
                 ->end()
 

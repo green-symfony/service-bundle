@@ -36,8 +36,10 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class BoolService
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
 
     /*
@@ -53,15 +55,15 @@ class BoolService
         ;
     }
 
-	/**/
+    /**/
     public function isCurrentConsolePathStartsWithSlash(): bool
     {
-		$cwd = \getcwd();
-		
+        $cwd = \getcwd();
+
         return false
-			|| \str_starts_with($cwd, '/')
-			|| \str_starts_with($cwd, '\\')
-		;
+            || \str_starts_with($cwd, '/')
+            || \str_starts_with($cwd, '\\')
+        ;
     }
 
     //###< API ###

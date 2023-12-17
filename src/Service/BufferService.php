@@ -4,12 +4,14 @@ namespace GS\Service\Service;
 
 class BufferService
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
 
     /**
-		Clears all the levels of the output OS buffer
+        Clears all the levels of the output OS buffer
         Works with php output buffer
     */
     public static function clear(): void

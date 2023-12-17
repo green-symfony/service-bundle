@@ -42,9 +42,9 @@ class CarbonService
 
     //###> API ###
 
-	/*
-		Gets string by Carbon
-	*/
+    /*
+        Gets string by Carbon
+    */
     public static function isoFormat(
         Carbon|CarbonImmutable $carbon,
         ?GSIsoFormat $isoFormat = null,
@@ -56,9 +56,9 @@ class CarbonService
         return (string) u($carbon->isoFormat($isoFormat::get()) . ' [' . $tz . ']')->title($isTitle);
     }
 
-	/*
-		Gets new Carbon by $origin Carbon
-	*/
+    /*
+        Gets new Carbon by $origin Carbon
+    */
     public static function forUser(
         Carbon|CarbonImmutable $origin,
         \DateTimeImmutable|\DateTime $sourceOfMeta = null,
@@ -72,9 +72,9 @@ class CarbonService
         ;
     }
 
-	/*
-		Gets number of the current year
-	*/
+    /*
+        Gets number of the current year
+    */
     public function getCurrentYear(): string|int
     {
         $carbon = $this->gsServiceCarbonFactory->make(

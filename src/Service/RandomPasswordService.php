@@ -4,13 +4,15 @@ namespace GS\Service\Service;
 
 class RandomPasswordService
 {
-	public function __construct() {}
-	
+    public function __construct()
+    {
+    }
+
     //###> API ###
 
-	/*
-		Gets random password
-	*/
+    /*
+        Gets random password
+    */
     public static function get(
         int $len = 10,
         string $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
