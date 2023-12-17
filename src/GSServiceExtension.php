@@ -257,6 +257,14 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                 ;
             }
         }
+	
+		//###> 
+		if ($container->hasDefinition(OSService::class)) {
+			$container
+				->getDefinition(OSService::class)
+				->setShared(false)
+			;
+		}
     }
 
     private function carbonService(

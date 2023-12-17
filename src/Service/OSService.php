@@ -28,7 +28,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class OSService
 {
     protected array $store;
-    protected $currentOs;
+    protected readonly string $currentOs;
 
     public function __construct()
     {
@@ -36,6 +36,10 @@ class OSService
     }
 
     //###> API ###
+	
+	public function getCurrentOs(): string {
+		return $this->currentOs;
+	}
 
 	/*
 		Invoke it to execute the callback
@@ -64,6 +68,7 @@ class OSService
     }
 
 	/*
+		IF $getOsName IS NULL IT MEANS ANY OS
 		Return value of the callback $getOsName must be ?string that will be compared with $this->currentOs
 		for different Operation Systems
 			Windows
@@ -75,14 +80,21 @@ class OSService
 		__invoke returns What returns callback
 	*/
 	public function setCallback(
-		callable|\Closure $getOsName,
+		callable|\Closure|null|string $getOsName,
 		string|int $callbackKey,
 		callable|\Closure $callback,
 	): static {
-		$os = $getOsName();
+		if (\is_null($getOsName)) {
+			//###> ANY OS
+			$requiredOs = $this->currentOs;
+		} else if (\is_string($getOsName)) {
+			$requiredOs = $getOsName;
+		} else {
+			$requiredOs = $getOsName();			
+		}
 		
-		if (!\is_string($os)) {
-			if (\is_null($os)) {
+		if (!\is_string($requiredOs)) {
+			if (\is_null($requiredOs)) {
 				return $this;
 			}
 			throw new \Exception(
@@ -90,7 +102,7 @@ class OSService
 			);
 		}
 		
-		$this->store[$os][$callbackKey] = $callback;
+		$this->store[$requiredOs][$callbackKey] = $callback;
 		
 		return $this;
 	}
