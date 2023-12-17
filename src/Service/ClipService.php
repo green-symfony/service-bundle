@@ -27,12 +27,26 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ClipService
 {
-    public string $contents;
-    protected $os;
-
-    public function __construct()
-    {
-        $this->os = \php_uname();
+    public function __construct(
+		protected readonly OSService $OSService,
+	) {
+		$OSService
+			->setCallback(
+				'windows',
+				'copy',
+				static fn($contents) => \exec('echo | set /p="' . $contents . '" | clip'),
+			)
+			->setCallback(
+				'darwin',
+				'copy',
+				static fn($contents) => \exec('echo ' . $contents . ' | pbcopy'),
+			)
+			->setCallback(
+				'linux',
+				'copy',
+				static fn($contents) => \exec('echo ' . $contents . ' | xclip -sel clip'),
+			)
+		;
     }
 
     //###> API ###
@@ -47,38 +61,14 @@ class ClipService
             return;
         }
 
-        $this->contents = \trim((string) $contents);
+        $contents = \trim((string) $contents);
 
-        if (\preg_match('~windows~i', $this->os)) {
-            $this->windows();
-            return;
-        }
-        if (\preg_match('~darwin~i', $this->os)) {
-            $this->mac();
-            return;
-        }
-        $this->linux();
+        ($this->OSService)(
+			'copy',
+			true,
+			$contents,
+		);
     }
 
     //###< API ###
-
-
-    //###> HELPER ###
-
-    private function mac(): void
-    {
-        \exec('echo ' . $this->contents . ' | pbcopy');
-    }
-
-    private function linux(): void
-    {
-        \exec('echo ' . $this->contents . ' | xclip -sel clip');
-    }
-
-    private function windows(): void
-    {
-        \exec('echo | set /p="' . $this->contents . '" | clip');
-    }
-
-    //###< HELPER ###
 }

@@ -31,6 +31,7 @@ use GS\Service\Service\ParserService;
 use GS\Service\Service\RandomPasswordService;
 use GS\Service\Service\RegexService;
 use GS\Service\Service\StringService;
+use GS\Service\Service\OSService;
 
 class GSServiceExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
@@ -179,6 +180,10 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                 StringService::class,
                 StringService::class,
             ],
+            [
+                OSService::class,
+                OSService::class,
+            ],
             ] as [ $id, $class ]
         ) {
             $container
@@ -252,6 +257,14 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                 ;
             }
         }
+	
+		//###> 
+		if ($container->hasDefinition(OSService::class)) {
+			$container
+				->getDefinition(OSService::class)
+				->setShared(false)
+			;
+		}
     }
 
     private function carbonService(
