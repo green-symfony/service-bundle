@@ -6,7 +6,8 @@ use Symfony\Component\Finder\{
     Finder
 };
 use GS\Service\Service\{
-    StringService
+    StringService,
+    BufferService
 };
 use GS\Command\Command\{
     AbstractCommand
@@ -148,7 +149,7 @@ class DumpInfoService
             \array_walk($paths, static fn(&$v, $k) => $v = [$v['to']] ?? null);
             \array_filter($paths);
         }
-
+		
         /* STYLE 1 */
         $command->getTable()
             ->setHeaders(
