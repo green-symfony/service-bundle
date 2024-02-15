@@ -150,6 +150,7 @@ class DumpInfoService
             \array_filter($paths);
         }
 		
+		//BufferService::clear();
         /* STYLE 1 */
         $command->getTable()
             ->setHeaders(
