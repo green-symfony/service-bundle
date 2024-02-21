@@ -87,6 +87,8 @@ class OSService
 	): static {
 		if (\is_callable($getOsName) || $getOsName instanceof \Closure) {
 			$requiredOs = $getOsName();
+		} else {
+			$requiredOs = $getOsName;
 		}
 		
 		if (\is_null($requiredOs)) {
