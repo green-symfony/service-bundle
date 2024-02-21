@@ -4,7 +4,7 @@ green-symfony/service-bundle
 # Description
 
 
-This bundle provides:
+This bundle provides ready to use services:
 | Service id |
 | ------------- |
 | [GS\Service\Service\ArrayService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ArrayService.php) |
@@ -15,10 +15,14 @@ This bundle provides:
 | [GS\Service\Service\DumpInfoService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/DumpInfoService.php) |
 | [GS\Service\Service\FilesystemService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/FilesystemService.php) |
 | [GS\Service\Service\HtmlService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/HtmlService.php) |
+| [GS\Service\Service\OSService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/OSService.php) |
 | [GS\Service\Service\ParserService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ParserService.php) |
 | [GS\Service\Service\RandomPasswordService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/RandomPasswordService.php) |
 | [GS\Service\Service\RegexService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/RegexService.php) |
 | [GS\Service\Service\StringService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/StringService.php) |
+
+This bundle provides abstract services:
+| [GS\Service\Service\ConfigService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ConfigService.php) |
 
 # Installation
 
