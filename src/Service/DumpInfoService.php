@@ -152,7 +152,7 @@ class DumpInfoService
 		
 		//BufferService::clear();
         /* STYLE 1 */
-        $command->getTable()
+        $command->getCloneTable()
             ->setHeaders(
                 $headers,
             )
