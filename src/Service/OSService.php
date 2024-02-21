@@ -32,6 +32,7 @@ class OSService
 
     public function __construct()
     {
+		$this->store = [];
         $this->currentOs = \php_uname(mode: "s");
     }
 
