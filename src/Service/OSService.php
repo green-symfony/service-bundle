@@ -32,6 +32,7 @@ class OSService
 
     public function __construct()
     {
+		$this->store = [];
         $this->currentOs = \php_uname(mode: "s");
     }
 
@@ -84,13 +85,13 @@ class OSService
 		string|int $callbackKey,
 		callable|\Closure $callback,
 	): static {
-		if (\is_null($getOsName)) {
+		if (\is_callable($getOsName) || $getOsName instanceof \Closure) {
+			$requiredOs = $getOsName();
+		}
+		
+		if (\is_null($requiredOs)) {
 			//###> ANY OS
 			$requiredOs = $this->currentOs;
-		} else if (\is_string($getOsName)) {
-			$requiredOs = $getOsName;
-		} else {
-			$requiredOs = $getOsName();			
 		}
 		
 		if (!\is_string($requiredOs)) {
