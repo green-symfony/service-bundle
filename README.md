@@ -31,7 +31,7 @@ This bundle provides abstract services:
 
 ### Step 1: Download the bundle
 
-[Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
+### [Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
 
 ```console
 git clone "https://github.com/green-symfony/service-bundle.git"

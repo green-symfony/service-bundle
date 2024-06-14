@@ -18,6 +18,8 @@ class Configuration implements ConfigurationInterface
     public function __construct(
         private $locale,
         private $timezone,
+        private $appEnv,
+        private $localDriveForTest,
         private $gsServiceYearRegex,
         private $gsServiceYearRegexFull,
         private $gsServiceIpV4Regex,
@@ -25,11 +27,11 @@ class Configuration implements ConfigurationInterface
     ) {
     }
 
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder(GSServiceExtension::PREFIX);
 
-        $treeBuilder->getRootNode()
+		$treeBuilder->getRootNode()
             ->info(''
                 . 'You can copy this example: "'
                 . \dirname(__DIR__)
@@ -40,22 +42,26 @@ class Configuration implements ConfigurationInterface
             ->children()
 
                 ->scalarNode(GSServiceExtension::LOCALE)
-                    ->isRequired()//->defaultValue($this->locale)
                     ->info('Locale for services')
+                    //->isRequired()
+					->defaultValue($this->locale)
                     //->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
                 ->end()
 
                 ->scalarNode(GSServiceExtension::TIMEZONE)
-                    ->isRequired()//->defaultValue($this->timezone)
-                    ->info('Timezone for services')
+					->info('Timezone for services')
+                    //->isRequired()
+                    ->defaultValue($this->timezone)
                 ->end()
 
                 ->scalarNode(GSServiceExtension::APP_ENV)
-                    ->isRequired()
+                    //->isRequired()
+                    ->defaultValue($this->appEnv)
                 ->end()
 
                 ->scalarNode(GSServiceExtension::LOCAL_DRIVE_FOR_TEST)
-                    ->isRequired()
+                    //->isRequired()
+                    ->defaultValue($this->localDriveForTest)
                 ->end()
 
                 ->arrayNode(ConfigService::CONFIG_SERVICE_KEY)

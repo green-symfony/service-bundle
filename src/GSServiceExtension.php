@@ -5,10 +5,8 @@ namespace GS\Service;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\DependencyInjection\Definition;
 use GS\Service\Configuration;
-use Symfony\Component\DependencyInjection\{
-    Parameter,
-    Reference
-};
+use Symfony\Component\DependencyInjection\Parameter;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -63,7 +61,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     }
 
     /**
-        -   load packages .yaml
+        -   (packages).yaml -> containerBuilder
     */
     public function prepend(ContainerBuilder $container)
     {
@@ -73,16 +71,25 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         ]);
     }
 
+	/**
+		-	Configuration -> $config
+	*/
     public function getConfiguration(
         array $config,
         ContainerBuilder $container,
     ) {
         return new Configuration(
-            locale:     $container->getParameter(
+			locale:     $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::LOCALE),
             ),
             timezone:   $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
+            ),
+			appEnv: $container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
+            ),
+			localDriveForTest: $container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
             ),
             gsServiceYearRegex: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
@@ -100,11 +107,12 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     }
 
     /**
-        -   load services.yaml
-        -   config->services
+        -   (packages).yaml		-> ContainerBuilder
+        -   $config				-> global parameters
+        -   services($config)	-> global services
         -   bundle's tags
     */
-    public function loadInternal(array $config, ContainerBuilder $container)
+    public function loadInternal(array $config, ContainerBuilder $container): void
     {
         $this->loadYaml($container, [
             //['config', 'services.yaml'],
@@ -113,7 +121,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             $config,
             $container,
         );
-        $this->createServicesWithConfigArgumentsOfTheCurrentBundle(
+		$this->createServicesWithConfigArgumentsOfTheCurrentBundle(
             $config,
             $container,
         );
@@ -321,14 +329,14 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         ServiceContainer::setParametersForce(
             $container,
             callbackGetValue: static function ($key) use (&$config, $pa) {
-                return $pa->getValue($config, '[' . $key . ']');
+				return $pa->getValue($config, '[' . $key . ']');
             },
             parameterPrefix: self::PREFIX,
             keys: [
-                self::APP_ENV,
-                self::LOCAL_DRIVE_FOR_TEST,
                 self::LOCALE,
                 self::TIMEZONE,
+                self::APP_ENV,
+                self::LOCAL_DRIVE_FOR_TEST,
                 self::YEAR_REGEX_KEY,
                 self::YEAR_REGEX_FULL_KEY,
                 self::IP_V_4_REGEX_KEY,
@@ -392,7 +400,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             ],
         );
 
-        /* to use in this object */
+        /* to use in this object
         $this->localeParameter = new Parameter(ServiceContainer::getParameterName(
             self::PREFIX,
             self::LOCALE,
@@ -401,6 +409,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             self::PREFIX,
             self::TIMEZONE,
         ));
+		*/
     }
 
     private function createServicesWithConfigArgumentsOfTheCurrentBundle(

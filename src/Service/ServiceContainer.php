@@ -7,6 +7,7 @@ use function Symfony\Component\String\{
     b
 };
 
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class ServiceContainer
@@ -45,9 +46,10 @@ class ServiceContainer
         ?string $parameterPrefix = null,
     ): void {
         foreach ($keys as $key) {
+			$callbackValue = self::tryToWrapValueWithParameter($callbackGetValue($key));
             $containerBuilder->setParameter(
                 self::getParameterName($parameterPrefix, $key),
-                $callbackGetValue($key)
+                $callbackValue,
             );
         }
     }
@@ -65,9 +67,10 @@ class ServiceContainer
 
         foreach ($keys as $key) {
             if (!$containerBuilder->hasParameter($key)) {
-                $containerBuilder->setParameter(
+                $callbackValue = self::tryToWrapValueWithParameter($callbackGetValue($key));
+				$containerBuilder->setParameter(
                     self::getParameterName($parameterPrefix, $key),
-                    $callbackGetValue($key),
+                    $callbackValue,
                 );
             }
         }
@@ -86,6 +89,29 @@ class ServiceContainer
             }
         }
     }
+	
+	/**
+		make from parameter -> new Parameter($parameter)
+	*/
+	public static function tryToWrapValueWithParameter(
+		mixed $parameter,
+	): mixed {
+
+		$isParameter = static fn($p) => \is_string($p) && \preg_match('~[%].+[%]~', $p);
+		$tryToGetParameter = static fn($v) => $isParameter($v) ? new Parameter($v) : $v;
+		
+		if (\is_array($parameter) && !empty($parameter)) {
+			\array_walk_recursive(
+				$parameter,
+				static fn(&$v) => $v = $tryToGetParameter($v),
+			);
+			return $parameter;
+		}
+		
+		$parameter = $tryToGetParameter($parameter);
+		
+		return $parameter;
+	}
 
     //###< API ###
 
@@ -114,6 +140,4 @@ class ServiceContainer
 
         return \trim($key, '[]');
     }
-
-    // ###< HELPER ###
 }
