@@ -28,16 +28,7 @@ This bundle provides abstract services:
 
 # Installation
 
-
-### Step 1: Download the bundle
-
-### [Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
-
-```console
-git clone "https://github.com/green-symfony/service-bundle.git"
-```
-
-### Step 2: Require the bundle
+### Step 1: Require the bundle
 
 In your `%kernel.project_dir%/composer.json`
 
@@ -53,13 +44,23 @@ In your `%kernel.project_dir%/composer.json`
 ]
 ```
 
-Open your console into your main project directory and execute:
+### Step 2: Download the bundle
+
+### [Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
+
+```console
+git clone "https://github.com/green-symfony/service-bundle.git"
+```
+
+```console
+cd "../../"
+```
 
 ```console
 composer require "green-symfony/service-bundle"
 ```
 
-[Binds](https://github.com/green-symfony/docs/blob/main/docs/borrow-services.yaml-section.md)
+### [Binds](https://github.com/green-symfony/docs/blob/main/docs/borrow-services.yaml-section.md)
 
 ### Step 3: Usage
 
