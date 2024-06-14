@@ -22,6 +22,8 @@ This bundle provides ready to use services:
 | [GS\Service\Service\StringService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/StringService.php) |
 
 This bundle provides abstract services:
+| Service id |
+| ------------- |
 | [GS\Service\Service\ConfigService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ConfigService.php) |
 
 # Installation
