@@ -46,7 +46,8 @@ In your `%kernel.project_dir%/composer.json`
 
 ### Step 2: Download the bundle
 
-### [Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
+[Before git clone](https://github.com/green-symfony/docs/blob/main/docs/bundles_green_symfony%20mkdir.md)
+------
 
 ```console
 git clone "https://github.com/green-symfony/service-bundle.git"
@@ -60,7 +61,8 @@ cd "../../"
 composer require "green-symfony/service-bundle"
 ```
 
-### [Binds](https://github.com/green-symfony/docs/blob/main/docs/borrow-services.yaml-section.md)
+[Binds](https://github.com/green-symfony/docs/blob/main/docs/borrow-services.yaml-section.md)
+------
 
 ### Step 3: Usage
 
