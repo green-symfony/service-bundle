@@ -90,10 +90,20 @@ class ConfigService
 			]
 		*/
 		#[Autowire(param: 'gs_service.load_packs_configs')]
-		protected readonly array $gsServicePackageFilenames,
+		protected array $gsServicePackageFilenames,
 		#[Autowire(service: 'Symfony\Contracts\Translation\TranslatorInterface')]
 		protected $gsServiceT,
 	) {
+		$defaultPackageFilenames = [
+			static::PACK_REL_PATH => static::DEFAULT_PACK_REL_PATH,
+			static::LAZY_LOAD => static::DEFAULT_LAZY_LOAD,
+			static::DOES_NOT_EXIST_MESS => static::DEFAULT_DOES_NOT_EXIST_MESS,
+		];
+		$this->gsServicePackageFilenames = \array_map(
+			static fn($el) => [...$defaultPackageFilenames, ...$el],
+			$gsServicePackageFilenames,
+		);
+		
 		$this->initPackageFilenameDataByPackageFilenames();
 	}
 	
@@ -255,15 +265,17 @@ class ConfigService
 		$resolver = new OptionsResolver();
 		
 		// Locate and parse Ymal
-		$config = \array_replace_recursive(
-			...\array_map(
-				static fn($path) => Yaml::parseFile(
-					Path::canonicalize($path),
-					flags: Yaml::PARSE_CUSTOM_TAGS,
-				),
-				$fileLocator->locate($filename, first: false),
-			)
+		$configs = \array_map(
+			static fn($path) => Yaml::parseFile(
+				Path::canonicalize($path),
+				flags: Yaml::PARSE_CUSTOM_TAGS,
+			),
+			$fileLocator->locate($filename, first: false),
 		);
+		$getUnpacked = static fn(...$packedArr) => $packedArr;
+		$configs = $getUnpacked($configs);
+		
+		$config = \array_replace_recursive($configs);
 		
 		$uniqPackId = $this->getUniqPackId($filename, $packRelPath);
 		$this->configureConfigOptions(
