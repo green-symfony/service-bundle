@@ -125,10 +125,15 @@ class ConfigService
 	// ###> API ###
 	
 	public function getPackageValue(
-		string $packName,
+		?string $packName = null,
 		?string $propertyAccessString = null,
 		?string $packRelPath = null,
 	): mixed {
+		
+		if (\is_null($packName)) {
+			return $this->loadedPackageFilenameData;
+		}
+		
 		[
 			$filename,
 			$packRelPath,
@@ -272,10 +277,9 @@ class ConfigService
 			),
 			$fileLocator->locate($filename, first: false),
 		);
-		$getUnpacked = static fn(...$packedArr) => $packedArr;
-		$configs = $getUnpacked($configs);
-		
-		$config = \array_replace_recursive($configs);
+
+		$config = \array_values(\array_replace_recursive($configs))[0];
+		$config ??= [];
 		
 		$uniqPackId = $this->getUniqPackId($filename, $packRelPath);
 		$this->configureConfigOptions(
