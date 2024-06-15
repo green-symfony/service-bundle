@@ -66,7 +66,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             [
                 ['config', 'services.yaml'],
                 ['config/packages', 'translation.yaml'],
-                //['config/packages', 'gs_service.yaml'],
+                ['config/packages', 'gs_service.yaml'],
             ],
         );
     }
@@ -111,8 +111,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
 
     public function loadInternal(array $config, ContainerBuilder $container): void
     {
-		//\dd($container->hasParameter('gs_service.load_packs_configs'));
-        $this->setContainerParameters(
+		$this->setContainerParameters(
             $config,
             $container,
         );
@@ -192,7 +191,9 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             keys: [
 				ConfigService::CONFIG_SERVICE_KEY,
             ],
-        );		
+        );
+		
+		//\dd($container->getParameter('gs_service.load_packs_configs'));
     }
 
 
