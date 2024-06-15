@@ -182,6 +182,24 @@ parameters:
     gs_service.ip_v4_regex:                    '%gs_service.ip_v4_regex%'
     gs_service.slash_of_ip_regex:              '%gs_service.slash_of_ip_regex%'
     gs_service.start_of_win_sys_file_regex:    '%gs_service.start_of_win_sys_file_regex%'
+    
+    
+    # To get with \GS\Service\Service\ConfigService::getPackageValue(without arguments)
+    # the following result:
+    #    array:2 [
+    #       "config/packages/framework.yaml" => array:2 []
+    #       "config/packages/gs_service.yaml" => []
+    #   ]
+    gs_service.load_packs_configs:
+        -   pack_name:      'framework.yaml'
+            pack_rel_path:  'config/packages'
+            lazy_load:      false
+        -   pack_name:      'gs_service.yaml'
+            pack_rel_path:  'config/packages'
+            does_not_exist_mess: "This package does't exist!"
+        -   pack_name:      'cache.yaml'
+            pack_rel_path:  'config/packages'
+            lazy_load:      true
     ###< GS\Service ###
 ```
 
