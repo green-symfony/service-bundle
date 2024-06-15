@@ -60,9 +60,12 @@ class FilesystemService
         protected readonly DumpInfoService $dumpInfoService,
         protected readonly StringService $stringService,
         protected readonly SluggerInterface $slugger,
+		#[Autowire(param: 'gs_service.local_drive_for_test')]
         protected readonly string $gsServiceLocalDriveForTest,
+		#[Autowire(param: 'gs_service.app_env')]
         protected readonly string $gsServiceAppEnv,
-        protected $gsServiceCarbonFactory,
+		#[Autowire(service: 'gs_service.carbon_factory_immutable')]
+        protected $gsServiceCarbonFactoryImmutable,
     ) {
         $this->filesystem = new Filesystem();
 

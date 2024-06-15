@@ -7,6 +7,7 @@ use function Symfony\Component\String\{
     b
 };
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Finder\{
     SplFileInfo,
     Finder
@@ -32,7 +33,6 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Contracts\Service\Attribute\Required;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use GS\Service\Service\{
     ArrayService,
@@ -54,9 +54,13 @@ class StringService
         protected readonly CarbonService $carbonService,
         protected readonly BoolService $boolService,
         protected readonly RegexService $regexService,
+		#[Autowire(param: 'gs_service.year_regex')]
         protected readonly string $gsServiceYearRegex,
+		#[Autowire(param: 'gs_service.year_regex_full')]
         protected readonly string $gsServiceYearRegexFull,
+		#[Autowire(param: 'gs_service.ip_v4_regex')]
         protected readonly string $gsServiceIpV4Regex,
+		#[Autowire(param: 'gs_service.slash_of_ip_regex')]
         protected readonly string $gsServiceSlashOfIpRegex,
     ) {
     }

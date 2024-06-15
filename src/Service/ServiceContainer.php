@@ -7,6 +7,8 @@ use function Symfony\Component\String\{
     b
 };
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -28,7 +30,7 @@ class ServiceContainer
         string|int|float|null $prefix,
         string|int|float $key,
     ): string {
-        return self::getNormalizedPrefix($prefix) . self::getNormalizedKey($key);
+        return static::getNormalizedPrefix($prefix) . static::getNormalizedKey($key);
     }
 
     /**
@@ -46,10 +48,9 @@ class ServiceContainer
         ?string $parameterPrefix = null,
     ): void {
         foreach ($keys as $key) {
-			$callbackValue = self::tryToWrapValueWithParameter($callbackGetValue($key));
             $containerBuilder->setParameter(
-                self::getParameterName($parameterPrefix, $key),
-                $callbackValue,
+                static::getParameterName($parameterPrefix, $key),
+                $callbackGetValue($key),
             );
         }
     }
@@ -67,10 +68,9 @@ class ServiceContainer
 
         foreach ($keys as $key) {
             if (!$containerBuilder->hasParameter($key)) {
-                $callbackValue = self::tryToWrapValueWithParameter($callbackGetValue($key));
-				$containerBuilder->setParameter(
-                    self::getParameterName($parameterPrefix, $key),
-                    $callbackValue,
+                $containerBuilder->setParameter(
+                    static::getParameterName($parameterPrefix, $key),
+                    $callbackGetValue($key),
                 );
             }
         }
@@ -89,29 +89,45 @@ class ServiceContainer
             }
         }
     }
-	
-	/**
-		make from parameter -> new Parameter($parameter)
-	*/
-	public static function tryToWrapValueWithParameter(
-		mixed $parameter,
-	): mixed {
 
-		$isParameter = static fn($p) => \is_string($p) && \preg_match('~[%].+[%]~', $p);
-		$tryToGetParameter = static fn($v) => $isParameter($v) ? new Parameter($v) : $v;
-		
-		if (\is_array($parameter) && !empty($parameter)) {
-			\array_walk_recursive(
-				$parameter,
-				static fn(&$v) => $v = $tryToGetParameter($v),
-			);
-			return $parameter;
-		}
-		
-		$parameter = $tryToGetParameter($parameter);
-		
-		return $parameter;
-	}
+    /**
+        @var    $relPath is a relPath or array with the following structure:
+            [
+                ['relPath', 'filename'],
+                ...
+            ]
+    */
+    public static function loadYaml(
+        ContainerBuilder $container,
+        string|array $relPath,
+        ?string $filename = null,
+    ): void {
+
+        if (\is_array($relPath)) {
+            foreach ($relPath as [$path, $filename]) {
+                self::loadYaml(
+                    $container,
+                    $path,
+                    $filename,
+                );
+            }
+            return;
+        }
+
+        if (\is_string($relPath) && $filename === null) {
+            throw new \Exception('Incorrect method arguments');
+        }
+
+        $loader = new YamlFileLoader(
+            $container,
+            new FileLocator(
+                [
+                    __DIR__ . '/../../' . $relPath,
+                ],
+            ),
+        );
+        $loader->load($filename);
+    }
 
     //###< API ###
 

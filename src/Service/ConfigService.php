@@ -15,10 +15,8 @@ use Symfony\Component\Filesystem\{
     Path,
     Filesystem
 };
-use Symfony\Component\OptionsResolver\{
-    Options,
-    OptionsResolver
-};
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Yaml\{
 	Tag\TaggedValue,
 	Yaml
@@ -41,8 +39,21 @@ use GS\Service\Service\{
 
 /**
 	This class allows to get some value from package configuration
+	
+	USAGE:	
+		$valueFromConfig = $this->configService->getPackageValue(
+			packName:					'workflow',
+			propertyAccessString:		'[framework][workflows][order][initial_marking]',
+			packRelPath:				'config/packages',
+			...
+		);
+		
+		1) SAVES GOT RESULTS
+		
+		Return type
+			With the help of propertyAccessString it can be a value
 */
-abstract class ConfigService
+class ConfigService
 {
 	//###> !CHANGE ME! ###
 	public const DEFAULT_PACK_EXT				= 'yaml';
@@ -68,6 +79,7 @@ abstract class ConfigService
 	public function __construct(
 		protected readonly BoolService $boolService,
 		protected readonly StringService $stringService,
+		#[Autowire(param: 'kernel.project_dir')]
 		protected readonly string $gsServiceProjectDir,
 		/* INTO GSServiceExtension::setParametersFromBundleConfiguration()
 			[
@@ -77,40 +89,31 @@ abstract class ConfigService
 				],
 			]
 		*/
+		#[Autowire(param: 'gs_service.load_packs_configs')]
 		protected readonly array $gsServicePackageFilenames,
+		#[Autowire(service: 'Symfony\Contracts\Translation\TranslatorInterface')]
 		protected $gsServiceT,
 	) {
 		$this->initPackageFilenameDataByPackageFilenames();
 	}
 	
+	//###> VALIDATE YOUR DATA SET ###
 	
-	//###> ABSTRACT ###
-	
-	abstract protected function configureConfigOptions(
+	protected function configureConfigOptions(
 		string $uniqPackId,
 		OptionsResolver $resolver,
 		array $inputData,
-	): void;
+	): void {
+		$resolver
+			->setDefaults($inputData)
+		;
+	}
 	
-	//###< ABSTRACT ###
+	//###< VALIDATE YOUR DATA SET ###
 	
 	
 	// ###> API ###
 	
-	/** USAGE:
-	
-		$valueFromConfig = $this-> <thisServiceName> -> <thisMethodName> (
-			packName:					'workflow',
-			propertyAccessString:		'[framework][workflows][order][initial_marking]',
-			packRelPath:				'config/packages',
-			...
-		);
-		
-		1) SAVES GOT RESULTS
-		
-		Return type
-			With the help of propertyAccessString it can be a value
-	*/
 	public function getPackageValue(
 		string $packName,
 		?string $propertyAccessString = null,
@@ -151,6 +154,21 @@ abstract class ConfigService
     }
 	
 	// ###< API ###
+	
+	
+	// ###> PROTECTED API ###
+	
+	protected function getUniqPackId(
+		string $filename,
+		string $packRelPath,
+	): string {
+		return $this->stringService->getPath(
+			$packRelPath,
+			$filename,
+		);
+	}
+	
+	// ###< PROTECTED API ###
 	
 	
 	// ###> HELPER ###
@@ -321,16 +339,6 @@ abstract class ConfigService
 	): string {
 		$defExt = (string) u(static::DEFAULT_PACK_EXT)->ensureStart('.');
 		return $this->stringService->getExtFromPath($filename, withDotAtTheBeginning: true, onlyExistingPath: false) ?? $defExt;
-	}
-	
-	private function getUniqPackId(
-		string $filename,
-		string $packRelPath,
-	): string {
-		return $this->stringService->getPath(
-			$packRelPath,
-			$filename,
-		);
 	}
 	
 	private function checkFileExisting(

@@ -28,25 +28,25 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class ClipService
 {
     public function __construct(
-		protected readonly OSService $OSService,
-	) {
-		$OSService
-			->setCallback(
-				'windows',
-				'copy',
-				static fn($contents) => \exec('echo | set /p="' . $contents . '" | clip'),
-			)
-			->setCallback(
-				'darwin',
-				'copy',
-				static fn($contents) => \exec('echo ' . $contents . ' | pbcopy'),
-			)
-			->setCallback(
-				'linux',
-				'copy',
-				static fn($contents) => \exec('echo ' . $contents . ' | xclip -sel clip'),
-			)
-		;
+        protected readonly OSService $OSService,
+    ) {
+        $OSService
+            ->setCallback(
+                'windows',
+                'copy',
+                static fn($contents) => \exec('echo | set /p="' . $contents . '" | clip'),
+            )
+            ->setCallback(
+                'darwin',
+                'copy',
+                static fn($contents) => \exec('echo ' . $contents . ' | pbcopy'),
+            )
+            ->setCallback(
+                'linux',
+                'copy',
+                static fn($contents) => \exec('echo ' . $contents . ' | xclip -sel clip'),
+            )
+        ;
     }
 
     //###> API ###
@@ -64,10 +64,10 @@ class ClipService
         $contents = \trim((string) $contents);
 
         ($this->OSService)(
-			'copy',
-			true,
-			$contents,
-		);
+            'copy',
+            true,
+            $contents,
+        );
     }
 
     //###< API ###
