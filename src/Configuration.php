@@ -20,10 +20,12 @@ class Configuration implements ConfigurationInterface
         private $timezone,
         private $appEnv,
         private $localDriveForTest,
+        private $loadPacksConfigs,
         private $gsServiceYearRegex,
         private $gsServiceYearRegexFull,
         private $gsServiceIpV4Regex,
         private $gsServiceSlashOfIpRegex,
+        private $gsServiceStartOfWinSysFileRegex,
     ) {
     }
 
@@ -31,7 +33,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder(GSServiceExtension::PREFIX);
 
-		$treeBuilder->getRootNode()
+        $treeBuilder->getRootNode()
             ->info(''
                 . 'You can copy this example: "'
                 . \dirname(__DIR__)
@@ -44,12 +46,12 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode(GSServiceExtension::LOCALE)
                     ->info('Locale for services')
                     //->isRequired()
-					->defaultValue($this->locale)
+                    ->defaultValue($this->locale)
                     //->defaultValue('%gs_generic_parts.locale%') Don't work, it's a simple string if defaultValue
                 ->end()
 
                 ->scalarNode(GSServiceExtension::TIMEZONE)
-					->info('Timezone for services')
+                    ->info('Timezone for services')
                     //->isRequired()
                     ->defaultValue($this->timezone)
                 ->end()
@@ -66,6 +68,7 @@ class Configuration implements ConfigurationInterface
 
                 ->arrayNode(ConfigService::CONFIG_SERVICE_KEY)
                     ->info('the packs whose config will be loaded when GS\\Service\\Service\\ConfigService creates')
+					->defaultValue($this->loadPacksConfigs)
                     ->arrayPrototype()
                         ->children()
                             ->scalarNode(ConfigService::PACK_NAME)
@@ -107,6 +110,11 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode(GSServiceExtension::SLASH_OF_IP_REGEX_KEY)
                     ->info('The regular expression of ip\'s slashes')
                     ->defaultValue($this->gsServiceSlashOfIpRegex)
+                ->end()
+
+                ->scalarNode(GSServiceExtension::START_OF_WIN_SYS_FILE_REGEX)
+                    ->info('The regular expression of windows hidden system files')
+                    ->defaultValue($this->gsServiceStartOfWinSysFileRegex)
                 ->end()
 
             ->end()

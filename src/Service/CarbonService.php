@@ -36,7 +36,8 @@ use GS\Service\IsoFormat\{
 class CarbonService
 {
     public function __construct(
-        protected $gsServiceCarbonFactory,
+		#[Autowire(service: 'gs_service.carbon_factory_immutable')]
+        protected $gsServiceCarbonFactoryImmutable,
     ) {
     }
 
@@ -77,7 +78,7 @@ class CarbonService
     */
     public function getCurrentYear(): string|int
     {
-        $carbon = $this->gsServiceCarbonFactory->make(
+        $carbon = $this->gsServiceCarbonFactoryImmutable->make(
             Carbon::now('UTC'),
         );
         return $carbon->year;
@@ -86,7 +87,7 @@ class CarbonService
     /* MMMM month as a word */
     public function getCurrentMonthWord(): string
     {
-        return $this->gsServiceCarbonFactory
+        return $this->gsServiceCarbonFactoryImmutable
             ->make(Carbon::now('UTC'))
             ->isoFormat('MMMM')
         ;
@@ -95,7 +96,7 @@ class CarbonService
     /* MMMM month as a word */
     public function getNextMonthWord(): string
     {
-        return $this->gsServiceCarbonFactory
+        return $this->gsServiceCarbonFactoryImmutable
             ->make(Carbon::now('UTC'))
             ->addMonthsNoOverflow(1)
             ->isoFormat('MMMM')
@@ -111,7 +112,7 @@ class CarbonService
         $monthWord = null;
 
         try {
-            $carbon = $this->gsServiceCarbonFactory
+            $carbon = $this->gsServiceCarbonFactoryImmutable
                 ->make(Carbon::now('UTC'))
                 ->month($monthNumber)
             ;

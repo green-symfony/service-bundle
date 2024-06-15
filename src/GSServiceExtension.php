@@ -10,9 +10,7 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\{
-    YamlFileLoader
-};
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use GS\Service\Service\ServiceContainer;
@@ -36,19 +34,20 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     public const PREFIX = 'gs_service';
 
     public const LOCALE = 'locale';
-    protected $localeParameter;
+    public Parameter $localeParameter;
     public const TIMEZONE = 'timezone';
-    protected $timezoneParameter;
+    public Parameter $timezoneParameter;
 
     public const APP_ENV = 'app_env';
     public const LOCAL_DRIVE_FOR_TEST = 'local_drive_for_test';
     public const FAKER_SERVICE_KEY = 'faker';
-    public const CARBON_FACTORY_SERVICE_KEY = 'carbon_factory';
+    public const CARBON_FACTORY_SERVICE_KEY = 'carbon_factory_immutable';
 
     public const YEAR_REGEX_KEY = 'year_regex';
     public const YEAR_REGEX_FULL_KEY = 'year_regex_full';
     public const IP_V_4_REGEX_KEY = 'ip_v4_regex';
     public const SLASH_OF_IP_REGEX_KEY = 'slash_of_ip_regex';
+    public const START_OF_WIN_SYS_FILE_REGEX = 'start_of_win_sys_file_regex';
 
     public function __construct(
         //private readonly BoolService $boolService,
@@ -60,36 +59,37 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         return self::PREFIX;
     }
 
-    /**
-        -   (packages).yaml -> containerBuilder
-    */
     public function prepend(ContainerBuilder $container)
     {
-        $this->loadYaml($container, [
-            ['config', 'services.yaml'],
-            ['config/packages', 'translation.yaml'],
-        ]);
+        ServiceContainer::loadYaml(
+            $container,
+            [
+                ['config', 'services.yaml'],
+                ['config/packages', 'translation.yaml'],
+                //['config/packages', 'gs_service.yaml'],
+            ],
+        );
     }
 
-	/**
-		-	Configuration -> $config
-	*/
     public function getConfiguration(
         array $config,
         ContainerBuilder $container,
     ) {
         return new Configuration(
-			locale:     $container->getParameter(
+            locale:     $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::LOCALE),
             ),
             timezone:   $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::TIMEZONE),
             ),
-			appEnv: $container->getParameter(
+            appEnv: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
             ),
-			localDriveForTest: $container->getParameter(
+            localDriveForTest: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::LOCAL_DRIVE_FOR_TEST),
+            ),
+            loadPacksConfigs: $container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, ConfigService::CONFIG_SERVICE_KEY),
             ),
             gsServiceYearRegex: $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::YEAR_REGEX_KEY),
@@ -103,39 +103,103 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             gsServiceSlashOfIpRegex:    $container->getParameter(
                 ServiceContainer::getParameterName(self::PREFIX, self::SLASH_OF_IP_REGEX_KEY),
             ),
+            gsServiceStartOfWinSysFileRegex:    $container->getParameter(
+                ServiceContainer::getParameterName(self::PREFIX, self::START_OF_WIN_SYS_FILE_REGEX),
+            ),
         );
     }
 
-    /**
-        -   (packages).yaml		-> ContainerBuilder
-        -   $config				-> global parameters
-        -   services($config)	-> global services
-        -   bundle's tags
-    */
     public function loadInternal(array $config, ContainerBuilder $container): void
     {
-        $this->loadYaml($container, [
-            //['config', 'services.yaml'],
-        ]);
-        $this->setParametersFromBundleConfiguration(
+		//\dd($container->hasParameter('gs_service.load_packs_configs'));
+        $this->setContainerParameters(
             $config,
             $container,
         );
-		$this->createServicesWithConfigArgumentsOfTheCurrentBundle(
+		$this->setContainerDefinitions(
             $config,
             $container,
         );
-        $this->registerBundleTagsForAutoconfiguration(
-            $container,
-        );
-        $this->setDefinitions(
+        $this->setContainerTags(
             $container,
         );
     }
+
+    private function setContainerParameters(
+        array $config,
+        ContainerBuilder $container,
+    ) {
+		$pa = PropertyAccess::createPropertyAccessor();
+
+		ServiceContainer::setParametersForce(
+            $container,
+            callbackGetValue: static function ($key) use (&$config, $pa) {
+                return $pa->getValue($config, '[' . $key . ']');
+            },
+            parameterPrefix: self::PREFIX,
+            keys: [
+            self::LOCALE,
+            self::TIMEZONE,
+            self::APP_ENV,
+            self::LOCAL_DRIVE_FOR_TEST,
+            self::YEAR_REGEX_KEY,
+            self::YEAR_REGEX_FULL_KEY,
+            self::IP_V_4_REGEX_KEY,
+            self::SLASH_OF_IP_REGEX_KEY,
+            ],
+        );
+
+        ServiceContainer::setParametersForce(
+            $container,
+            callbackGetValue: static function ($key) use (&$config, $pa) {
+                $loadPacksConfigs = [];
+                $configsService = $pa->getValue($config, '[' . $key . ']');
+				foreach ($configsService as $configService) {
+                    //###>
+                    $packName = null;
+                    if (isset($configService[ConfigService::PACK_NAME])) {
+                        $packName = $configService[ConfigService::PACK_NAME];
+                    }
+                    $packRelPath = null;
+                    if (isset($configService[ConfigService::PACK_REL_PATH])) {
+                        $packRelPath = $configService[ConfigService::PACK_REL_PATH];
+                    }
+                    if ($packName == false) {
+                        continue;
+                    }
+                    if ($packRelPath == false) {
+                        $packRelPath = null;
+                    }
+
+                    $lazyLoad = $configService[ConfigService::LAZY_LOAD]
+                    ?? ConfigService::DEFAULT_LAZY_LOAD
+                    ;
+
+                    $doesNotExistMess = $configService[ConfigService::DOES_NOT_EXIST_MESS]
+                    ?? ConfigService::DEFAULT_DOES_NOT_EXIST_MESS
+                    ;
+
+                    $loadPacksConfigs [] = [
+                    ConfigService::PACK_NAME            => $packName,
+                    ConfigService::PACK_REL_PATH        => $packRelPath,
+                    ConfigService::LAZY_LOAD            => $lazyLoad,
+                    ConfigService::DOES_NOT_EXIST_MESS  => $doesNotExistMess,
+                    ];
+                }
+                return $loadPacksConfigs;
+            },
+            parameterPrefix: self::PREFIX,
+            keys: [
+				ConfigService::CONFIG_SERVICE_KEY,
+            ],
+        );		
+    }
+
 
     //###> HELPERS ###
 
-    private function setDefinitions(
+
+    private function setRestContainerDefinitions(
         ContainerBuilder $container,
     ): void {
         foreach (
@@ -143,62 +207,82 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             [
                 ArrayService::class,
                 ArrayService::class,
+				false,
             ],
             [
                 BoolService::class,
                 BoolService::class,
+				false,
             ],
             [
                 BufferService::class,
                 BufferService::class,
+				false,
             ],
             [
                 CarbonService::class,
                 CarbonService::class,
+				false,
             ],
             [
                 ClipService::class,
                 ClipService::class,
+				false,
             ],
             [
                 DumpInfoService::class,
                 DumpInfoService::class,
+				false,
             ],
             [
                 FilesystemService::class,
                 FilesystemService::class,
+				false,
             ],
             [
                 HtmlService::class,
                 HtmlService::class,
+				false,
             ],
             [
                 ParserService::class,
                 ParserService::class,
+				false,
             ],
             [
                 RandomPasswordService::class,
                 RandomPasswordService::class,
+				false,
             ],
             [
                 RegexService::class,
                 RegexService::class,
+				false,
             ],
             [
                 StringService::class,
                 StringService::class,
+				false,
             ],
             [
                 OSService::class,
                 OSService::class,
+				false,
             ],
-            ] as [ $id, $class ]
+            [
+                ConfigService::class,
+                ConfigService::class,
+				false,
+            ],
+            ] as [ $id, $class, $isAbstract ]
         ) {
             $container
                 ->setDefinition(
                     $id,
                     (new Definition($class))
-                        ->setAutowired(true),
+                        ->setAutowired(true)
+                        ->setAbstract($isAbstract)
+					,
                 )
             ;
         }
@@ -243,7 +327,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                     '$gsServiceAppEnv' => $container->getParameter(
                         ServiceContainer::getParameterName(self::PREFIX, self::APP_ENV),
                     ),
-                    '$gsServiceCarbonFactory' => $container->getDefinition(
+                    '$gsServiceCarbonFactoryImmutable' => $container->getDefinition(
                         ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
                     ),
                 ],
@@ -251,7 +335,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             [
                 CarbonService::class,
                 [
-                    '$gsServiceCarbonFactory' => $container->getDefinition(
+                    '$gsServiceCarbonFactoryImmutable' => $container->getDefinition(
                         ServiceContainer::getParameterName(self::PREFIX, self::CARBON_FACTORY_SERVICE_KEY),
                     ),
                 ],
@@ -259,23 +343,23 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             ] as [ $id, $args ]
         ) {
             if ($container->hasDefinition($id)) {
-                $container
+				$container
                     ->getDefinition($id)
                     ->setArguments($args)
                 ;
             }
         }
-	
-		//###> 
-		if ($container->hasDefinition(OSService::class)) {
-			$container
-				->getDefinition(OSService::class)
-				->setShared(false)
-			;
-		}
-    }
 
-    private function carbonService(
+        //###>
+        if ($container->hasDefinition(OSService::class)) {
+            $container
+                ->getDefinition(OSService::class)
+                ->setShared(false)
+            ;
+        }
+    }
+    
+    private function carbonDefinition(
         array $config,
         ContainerBuilder $container,
     ): void {
@@ -298,7 +382,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         );
     }
 
-    private function fakerService(
+    private function fakerDefinition(
         array $config,
         ContainerBuilder $container,
     ): void {
@@ -313,120 +397,25 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         );
     }
 
-    private function setParametersFromBundleConfiguration(
+    private function setContainerDefinitions(
         array $config,
         ContainerBuilder $container,
     ) {
-        /*
-        \dd(
-            $container->hasParameter('error_prod_logger_email'),
-            PropertyAccess::createPropertyAccessor()->getValue($config, '[error_prod_logger_email][from]'),
-        );
-        */
-
-        $pa = PropertyAccess::createPropertyAccessor();
-
-        ServiceContainer::setParametersForce(
-            $container,
-            callbackGetValue: static function ($key) use (&$config, $pa) {
-				return $pa->getValue($config, '[' . $key . ']');
-            },
-            parameterPrefix: self::PREFIX,
-            keys: [
-                self::LOCALE,
-                self::TIMEZONE,
-                self::APP_ENV,
-                self::LOCAL_DRIVE_FOR_TEST,
-                self::YEAR_REGEX_KEY,
-                self::YEAR_REGEX_FULL_KEY,
-                self::IP_V_4_REGEX_KEY,
-                self::SLASH_OF_IP_REGEX_KEY,
-            ],
-        );
-
-        ServiceContainer::setParametersForce(
-            $container,
-            callbackGetValue: static function ($key) use (&$config, $pa) {
-                $loadPacksConfigs = [];
-                $configsService = $pa->getValue($config, '[' . $key . ']');
-                foreach ($configsService as $configService) {
-                    /*
-                    $packName = $this->boolService->isGet(
-                        $configService,
-                        ConfigService::PACK_NAME,
-                    );
-                    $packRelPath = $this->boolService->isGet(
-                        $configService,
-                        ConfigService::PACK_REL_PATH,
-                    );
-                    */
-                    //###>
-                    $packName = null;
-                    if (isset($configService[ConfigService::PACK_NAME])) {
-                        $packName = $configService[ConfigService::PACK_NAME];
-                    }
-                    $packRelPath = null;
-                    if (isset($configService[ConfigService::PACK_REL_PATH])) {
-                        $packRelPath = $configService[ConfigService::PACK_REL_PATH];
-                    }
-                    $doesNotExistMess = null;
-                    if (isset($configService[ConfigService::DOES_NOT_EXIST_MESS])) {
-                        $doesNotExistMess = $configService[ConfigService::DOES_NOT_EXIST_MESS];
-                    }
-
-                    if ($packName == false) {
-                        continue;
-                    }
-                    if ($packRelPath == false) {
-                        $packRelPath = null;
-                    }
-
-                    $lazyLoad = $configService[ConfigService::LAZY_LOAD]
-                        ?? ConfigService::DEFAULT_LAZY_LOAD
-                    ;
-
-                    $loadPacksConfigs [] = [
-                        ConfigService::PACK_NAME            => $packName,
-                        ConfigService::PACK_REL_PATH        => $packRelPath,
-                        ConfigService::LAZY_LOAD            => $lazyLoad,
-                        ConfigService::DOES_NOT_EXIST_MESS  => $doesNotExistMess,
-                    ];
-                }
-                return $loadPacksConfigs;
-            },
-            parameterPrefix: self::PREFIX,
-            keys: [
-                ConfigService::CONFIG_SERVICE_KEY,
-            ],
-        );
-
-        /* to use in this object
-        $this->localeParameter = new Parameter(ServiceContainer::getParameterName(
-            self::PREFIX,
-            self::LOCALE,
-        ));
-        $this->timezoneParameter = new Parameter(ServiceContainer::getParameterName(
-            self::PREFIX,
-            self::TIMEZONE,
-        ));
-		*/
-    }
-
-    private function createServicesWithConfigArgumentsOfTheCurrentBundle(
-        array $config,
-        ContainerBuilder $container,
-    ) {
-        $this->carbonService(
+        $this->setParameterObjects();
+        $this->carbonDefinition(
             $config,
             $container,
         );
-        $this->fakerService(
+        $this->fakerDefinition(
             $config,
+            $container,
+        );
+        $this->setRestContainerDefinitions(
             $container,
         );
     }
 
-    private function registerBundleTagsForAutoconfiguration(ContainerBuilder $container)
+    private function setContainerTags(ContainerBuilder $container)
     {
         /*
         $container
@@ -436,38 +425,17 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         */
     }
 
-    /**
-        @var    $relPath is a relPath or array with the following structure:
-            [
-                ['relPath', 'filename'],
-                ...
-            ]
-    */
-    private function loadYaml(
-        ContainerBuilder $container,
-        string|array $relPath,
-        ?string $filename = null,
-    ): void {
+    private function setParameterObjects(): void
+    {
+        /* to use in this object */
 
-        if (\is_array($relPath)) {
-            foreach ($relPath as [$path, $filename]) {
-                $this->loadYaml($container, $path, $filename);
-            }
-            return;
-        }
-
-        if (\is_string($relPath) && $filename === null) {
-            throw new \Exception('Incorrect method arguments');
-        }
-
-        $loader = new YamlFileLoader(
-            $container,
-            new FileLocator(
-                [
-                    __DIR__ . '/../' . $relPath,
-                ],
-            ),
-        );
-        $loader->load($filename);
+        $this->localeParameter = new Parameter(ServiceContainer::getParameterName(
+            self::PREFIX,
+            self::LOCALE,
+        ));
+        $this->timezoneParameter = new Parameter(ServiceContainer::getParameterName(
+            self::PREFIX,
+            self::TIMEZONE,
+        ));
     }
 }

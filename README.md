@@ -7,11 +7,14 @@ green-symfony/service-bundle
 This bundle provides ready to use services:
 | Service id |
 | ------------- |
+| gs_service.faker |
+| gs_service.carbon_factory_immutable |
 | [GS\Service\Service\ArrayService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ArrayService.php) |
 | [GS\Service\Service\BoolService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/BoolService.php) |
 | [GS\Service\Service\BufferService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/BufferService.php) |
 | [GS\Service\Service\CarbonService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/CarbonService.php) |
 | [GS\Service\Service\ClipService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ClipService.php) |
+| [GS\Service\Service\ConfigService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ConfigService.php) |
 | [GS\Service\Service\DumpInfoService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/DumpInfoService.php) |
 | [GS\Service\Service\FilesystemService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/FilesystemService.php) |
 | [GS\Service\Service\HtmlService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/HtmlService.php) |
@@ -20,11 +23,6 @@ This bundle provides ready to use services:
 | [GS\Service\Service\RandomPasswordService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/RandomPasswordService.php) |
 | [GS\Service\Service\RegexService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/RegexService.php) |
 | [GS\Service\Service\StringService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/StringService.php) |
-
-This bundle provides abstract services:
-| Service id |
-| ------------- |
-| [GS\Service\Service\ConfigService](https://github.com/green-symfony/service-bundle/blob/main/src/Service/ConfigService.php) |
 
 # Installation
 
@@ -110,3 +108,74 @@ class YourClass {
 	}
 }
 ```
+
+**Or bind gs_service services**
+
+```yaml
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+    
+        bind:
+            ###> SERVICES ###
+            
+            $t:                 '@Symfony\Contracts\Translation\TranslatorInterface'
+			
+			###>gs_service ###
+			# found them by executing: php ./bin/console debug:container | grep gs_service
+            $carbonFactoryImmutable: '@gs_service.carbon_factory_immutable'
+            $faker: '@gs_service.faker'
+            ###< gs_service ###
+            
+			###< SERVICES ###
+```
+
+```php
+//###> YOUR FILE ###
+
+use Symfony\Component\Routing\Attribute\Route;
+
+class YourController {
+
+	#[Route(path: '/')]
+	public function home(
+		$faker, // BIND AUTOWIRING for @gs_service.faker!
+	) {
+		return $this->render('home/home.html.twig', [
+			'random_number' => $faker->numberBetween(0, 1000),
+		]);
+	}
+}
+```
+
+### Step 4: Override bundle parameters and configure the bundle
+
+Open terminal in your project `%kernel.project_dir%` and execute:
+
+```console
+cp "./bundles/green-symfony/service-bundle/config/packages/gs_service.yaml" "./config/packages/gs_service.yaml"
+```
+
+Here `%kernel.project_dir%/config/packages/gs_service.yaml`, you can override any parameter.
+
+Also you can override parameters in your `%kernel.project_dir%/config/services.yaml`
+
+```yaml
+parameters:
+    ###> GS\Service ###
+    gs_service.locale:                         '%gs_service.locale%'
+    gs_service.timezone:                       '%gs_service.timezone%'
+    gs_service.app_env:                        '%gs_service.app_env%'
+    gs_service.local_drive_for_test:           '%gs_service.local_drive_for_test%'
+    gs_service.year_regex:                     '%gs_service.year_regex%'
+    gs_service.year_regex_full:                '%gs_service.year_regex_full%'
+    gs_service.ip_v4_regex:                    '%gs_service.ip_v4_regex%'
+    gs_service.slash_of_ip_regex:              '%gs_service.slash_of_ip_regex%'
+    gs_service.start_of_win_sys_file_regex:    '%gs_service.start_of_win_sys_file_regex%'
+    ###< GS\Service ###
+```
+
+But remember, `services.yaml` parameters wins `gs_service.yaml` ones.

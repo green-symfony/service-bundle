@@ -149,8 +149,8 @@ class DumpInfoService
             \array_walk($paths, static fn(&$v, $k) => $v = [$v['to']] ?? null);
             \array_filter($paths);
         }
-		
-		//BufferService::clear();
+
+        //BufferService::clear();
         /* STYLE 1 */
         $command->getCloneTable()
             ->setHeaders(

@@ -1,20 +1,15 @@
-###> JUST EXAMPLE, copy it into your config ###
-
 gs_service:
-    locale:                     '%env(LOCALE)%'
+    locale:                         '%gs_service.locale%'
+    timezone:                       '%gs_service.timezone%'
+    app_env:                        '%gs_service.app_env%'
+    local_drive_for_test:           '%gs_service.local_drive_for_test%'
+    year_regex:                     '%gs_service.year_regex%'
+    year_regex_full:                '%gs_service.year_regex_full%'
+    ip_v4_regex:                    '%gs_service.ip_v4_regex%'
+    slash_of_ip_regex:              '%gs_service.slash_of_ip_regex%'
+    start_of_win_sys_file_regex:    '%gs_service.start_of_win_sys_file_regex%'
 
-    timezone:                   '%env(TIMEZONE)%'
-
-    app_env:                    '%env(APP_ENV)%'
-
-    local_drive_for_test:       '%env(LOCAL_DRIVE_FOR_TEST)%'
-
-    load_packs_configs:
-        -   pack_name:      'monolog'
-            pack_rel_path:  ~
-            does_not_exist_mess: 'your_namespace.exception.file_must_exist' # (NOT REQUIRED) Translated message
-    
-    year_regex:         '(?:\b[0-9]{4}\b|\b[0-9]{2}\b)'
-    year_regex_full:    '[0-9]{4}'
-    ip_v4_regex:        '(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
-    slash_of_ip_regex:  '[/\\]{1,2}'
+    #load_packs_configs:
+    #    -   pack_name:      'monolog'
+    #        pack_rel_path:  ~
+    #        does_not_exist_mess: 'your_namespace.exception.file_must_exist' # (NOT REQUIRED) Translated message    
