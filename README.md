@@ -125,11 +125,11 @@ services:
             $t:                 '@Symfony\Contracts\Translation\TranslatorInterface'
             
             ###>gs_service ###
-			
-            # ___FOUND THEM BY EXECUTING___: php.exe ./bin/console debug:container | grep gs_service
-			# ___OR FOR LINUX CLI___: bin/console debug:container | grep gs_service
             
-			$carbonFactoryImmutable: '@gs_service.carbon_factory_immutable'
+            # ___FOUND THEM BY EXECUTING___: php.exe ./bin/console debug:container | grep gs_service
+            # ___OR FOR LINUX CLI___: bin/console debug:container | grep gs_service
+            
+            $carbonFactoryImmutable: '@gs_service.carbon_factory_immutable'
             $faker: '@gs_service.faker'
             ###< gs_service ###
             
@@ -169,8 +169,8 @@ Also you can override parameters in your `%kernel.project_dir%/config/services.y
 ```yaml
 parameters:
 
-	# ___FOUND THEM BY EXECUTING___: php.exe ./bin/console debug:container --parameters | grep gs_service
-	# ___OR FOR LINUX CLI___: bin/console debug:container --parameters | grep gs_service
+    # ___FOUND THEM BY EXECUTING___: php.exe ./bin/console debug:container --parameters | grep gs_service
+    # ___OR FOR LINUX CLI___: bin/console debug:container --parameters | grep gs_service
 
     ###> GS\Service ###
     gs_service.locale:                         '%gs_service.locale%'
