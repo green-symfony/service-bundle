@@ -319,6 +319,15 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
                 ],
             ],
             [
+                ConfigService::class,
+                [
+                    '$gsServiceProjectDir' => $container->getParameter('kernel.project_dir'),
+                    '$gsServicePackageFilenames' => $container->getParameter(
+                        ServiceContainer::getParameterName(self::PREFIX, ConfigService::CONFIG_SERVICE_KEY),
+                    ),
+                ],
+            ],
+            [
                 FilesystemService::class,
                 [
                     '$gsServiceLocalDriveForTest' => $container->getParameter(
@@ -351,12 +360,18 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
         }
 
         //###>
-        if ($container->hasDefinition(OSService::class)) {
-            $container
-                ->getDefinition(OSService::class)
-                ->setShared(false)
-            ;
-        }
+		foreach([
+			[
+				OSService::class,
+			],
+		] as [ $id ]) {
+			if ($container->hasDefinition($id)) {
+				$container
+					->getDefinition($id)
+					->setShared(false)
+				;
+			}			
+		}
     }
     
     private function carbonDefinition(
