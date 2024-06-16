@@ -17,6 +17,7 @@ use GS\Service\Service\ServiceContainer;
 use GS\Service\Service\ConfigService;
 use GS\Service\Service\ArrayService;
 use GS\Service\Service\BoolService;
+use GS\Service\Service\DoctrineService;
 use GS\Service\Service\BufferService;
 use GS\Service\Service\CarbonService;
 use GS\Service\Service\ClipService;
@@ -273,6 +274,11 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
             [
                 ConfigService::class,
                 ConfigService::class,
+				false,
+            ],
+            [
+                DoctrineService::class,
+                DoctrineService::class,
 				false,
             ],
             ] as [ $id, $class, $isAbstract ]
