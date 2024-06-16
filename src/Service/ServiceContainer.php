@@ -108,7 +108,8 @@ class ServiceContainer
             foreach ($relPath as [$path, $filename]) {
                 self::loadYaml(
                     $container,
-                    $path,
+                    $__DIR__,
+					$path,
                     $filename,
                 );
             }
