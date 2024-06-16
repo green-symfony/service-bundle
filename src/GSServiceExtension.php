@@ -64,7 +64,7 @@ class GSServiceExtension extends ConfigurableExtension implements PrependExtensi
     {
         ServiceContainer::loadYaml(
             $container,
-			__DIR__,
+			__DIR__ . '/..',
             [
                 ['config', 'services.yaml'],
                 ['config/packages', 'translation.yaml'],
