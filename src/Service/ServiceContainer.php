@@ -99,6 +99,7 @@ class ServiceContainer
     */
     public static function loadYaml(
         ContainerBuilder $container,
+		string $__DIR__,
         string|array $relPath,
         ?string $filename = null,
     ): void {
@@ -122,7 +123,7 @@ class ServiceContainer
             $container,
             new FileLocator(
                 [
-                    __DIR__ . '/../../' . $relPath,
+                    $__DIR__ . '/../../' . $relPath,
                 ],
             ),
         );
